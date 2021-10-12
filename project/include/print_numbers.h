@@ -1,6 +1,6 @@
-#ifndef PRINT_NUMBERS_H
-#define PRINT_NUMBERS_H
+#ifndef PROJECT_INCLUDE_PRINT_NUMBERS_H_
+#define PROJECT_INCLUDE_PRINT_NUMBERS_H_
 
 void print_all_numbers(int n);
 
-#endif //PRINT_NUMBERS_H
+#endif  // PROJECT_INCLUDE_PRINT_NUMBERS_H_

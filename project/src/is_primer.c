@@ -1,7 +1,6 @@
 #include "is_primer.h"
 
-int is_prime_num(int num)
-{
+int is_prime_num(int num) {
     if (num < 2)
         return 0;
     for (int i = 2; i*i < num; ++i)
@@ -9,3 +8,4 @@ int is_prime_num(int num)
             return 0;
     return 1;
 }
+
