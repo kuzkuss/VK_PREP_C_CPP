@@ -9,16 +9,16 @@
 #define SIZE_ADDRESS 30
 #define SIZE_TEL 15
 
-struct masterRecord {
-    int Number;
-    char Name[SIZE_NAME];
-    char Surname[SIZE_SURNAME];
+struct client {
+    int number;
+    char name[SIZE_NAME];
+    char surname[SIZE_SURNAME];
     char address[SIZE_ADDRESS];
-    char TelNumber[SIZE_TEL];
+    char tel_number[SIZE_TEL];
     double indebtedness;
     double credit_limit;
     double cash_payments;
 };
-typedef struct masterRecord Data;
+typedef struct client Data;
 
 #endif  // PROJECT_INCLUDE_UTILS_H_

@@ -24,8 +24,8 @@ void print_menu() {
 }
 
 void print_to_file(FILE *f, Data client_data) {
-    fprintf(f, "%-12d%-11s%-11s%-16s%20s%12.2f%12.2f%12.2f\n", client_data.Number,
-            client_data.Name, client_data.Surname, client_data.address, client_data.TelNumber,
+    fprintf(f, "%-12d%-11s%-11s%-16s%20s%12.2f%12.2f%12.2f\n", client_data.number,
+            client_data.name, client_data.surname, client_data.address, client_data.tel_number,
             client_data.indebtedness, client_data.credit_limit, client_data.cash_payments);
 }
 

@@ -6,7 +6,6 @@
 #include "output.h"
 
 int main(void) {
-    setbuf(stdout, NULL);
     int choice = 0;
     FILE *file_record = NULL;
     FILE *file_transaction = NULL;
@@ -24,6 +23,7 @@ int main(void) {
                     write_clients(file_record, client_data);
                     fclose(file_record);
                 }
+                scanf("%*[^\n]");
                 break;
             case 2:
                 file_record = fopen(filename_transaction, "r+");
@@ -33,6 +33,7 @@ int main(void) {
                     write_transactions(file_record, transfer);
                     fclose(file_record);
                 }
+                scanf("%*[^\n]");
                 break;
             case 3:
                 file_record = fopen(filename_record, "r");
