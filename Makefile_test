@@ -17,11 +17,5 @@ rebuild: clean build
 check:
 	./linters/run.sh
 
-test: $(TARGET)
-	./btests/run.sh $(TARGET)
-
-memtest: $(TARGET)
-	./btests/run.sh $(TARGET) --memcheck
-
 clean:
 	rm -rf $(TARGET) *.dat

@@ -1,9 +1,9 @@
 #ifndef PROJECT_INCLUDE_UTILS_H_
 #define PROJECT_INCLUDE_UTILS_H_
 
-#define filename_transaction "transaction.dat"
-#define filename_record "record.dat"
-#define filename_blackrecord "blackrecord.dat"
+#define FILENAME_TRANSACTION "transaction.dat"
+#define FILENAME_RECORD "record.dat"
+#define FILENAME_BLACKRECORD "blackrecord.dat"
 #define SIZE_NAME 20
 #define SIZE_SURNAME 20
 #define SIZE_ADDRESS 30
