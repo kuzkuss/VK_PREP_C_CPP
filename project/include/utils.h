@@ -1,6 +1,8 @@
 #ifndef PROJECT_INCLUDE_UTILS_H_
 #define PROJECT_INCLUDE_UTILS_H_
 
+#define FORMAT_STRING "%d%19s%19s%29s%14s%lf%lf%lf"
+
 #define FILENAME_TRANSACTION "transaction.dat"
 #define FILENAME_RECORD "record.dat"
 #define FILENAME_BLACKRECORD "blackrecord.dat"

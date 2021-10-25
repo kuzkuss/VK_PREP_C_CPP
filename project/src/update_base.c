@@ -3,7 +3,7 @@
 
 void update_info(FILE *f_clients, FILE *f_transactions, FILE *blackrecord,
                                                                 Data *client_data, Data *transfer) {
-    while (fscanf(f_clients, "%d%19s%19s%29s%14s%lf%lf%lf", &client_data->number, client_data->name,
+    while (fscanf(f_clients, FORMAT_STRING, &client_data->number, client_data->name,
               client_data->surname, client_data->address, client_data->tel_number,
               &client_data->indebtedness, &client_data->credit_limit, &client_data->cash_payments) == 8) {
         while (fscanf(f_transactions, "%d %lf", &transfer->number, &transfer->cash_payments) == 2) {
