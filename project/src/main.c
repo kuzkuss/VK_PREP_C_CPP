@@ -23,7 +23,6 @@ int main(void) {
                     write_clients(file_record, &client_data);
                     fclose(file_record);
                 }
-                scanf("%*[^\n]");
                 break;
             case 2:
                 file_record = fopen(FILENAME_TRANSACTION, "r+");
