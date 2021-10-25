@@ -47,7 +47,7 @@ int test_program(void) {
     const char *filename_res = "blackrecord.dat";
     FILE *blackrecord = fopen(filename_res, "w+");
     if (!blackrecord) {
-        puts("Not access.");
+        puts("No access.");
         fclose(file_record);
         fclose(file_transaction);
         return ERROR;
