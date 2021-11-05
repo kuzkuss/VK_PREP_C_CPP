@@ -39,10 +39,13 @@ static char *get_line(FILE *f);
 
 
 static rule_t syntax[S_COUNT][L_COUNT] = {
-//		     L_EMPTY_STR,           L_SPACE,                    L_TITLE_TO,                 L_TITLE_FROM                L_TITLE_DATE               L_TITLE_CONTENT_TYPE      L_OTHER_TITLE
-/*S_BEGIN*/	{{S_ERR, NULL},	        {S_ERR, NULL},	            {S_TITLE, NULL},            {S_TITLE, NULL},            {S_TITLE, NULL},           {S_TITLE, NULL},	         {S_TITLE, NULL}},
-/*S_TITLE*/	{{S_END, NULL},		    {S_ERR, NULL},          	{S_VALUE, get_value},       {S_VALUE, get_value},       {S_VALUE, get_value},      {S_VALUE, get_value},     {S_VALUE, NULL}},
-/*S_VALUE*/	{{S_END, NULL},         {S_VALUE, save_data},	    {S_TITLE, NULL},            {S_TITLE, NULL},            {S_TITLE, NULL},           {S_TITLE, NULL},	         {S_TITLE, NULL}},
+//		   L_EMPTY_STR, L_SPACE, L_TITLE_TO, L_TITLE_FROM, L_TITLE_DATE, L_TITLE_CONTENT_TYPE, L_OTHER_TITLE
+/*S_BEGIN*/	{{S_ERR, NULL},	 {S_ERR, NULL},	 {S_TITLE, NULL},  {S_TITLE, NULL},
+                {S_TITLE, NULL},           {S_TITLE, NULL},	         {S_TITLE, NULL}},
+/*S_TITLE*/	{{S_END, NULL},  {S_ERR, NULL},  {S_VALUE, get_value},  {S_VALUE, get_value},
+                {S_VALUE, get_value},      {S_VALUE, get_value},     {S_VALUE, NULL}},
+/*S_VALUE*/	{{S_END, NULL},   {S_VALUE, save_data},	 {S_TITLE, NULL},  {S_TITLE, NULL},
+                {S_TITLE, NULL},           {S_TITLE, NULL},	         {S_TITLE, NULL}},
 };
 
 static lexem_t get_lexem(char *s, size_t len) {
@@ -59,11 +62,11 @@ static lexem_t get_lexem(char *s, size_t len) {
 
     if (strstr(s, "to") == s)
         return L_TITLE_TO;
-    else if(strstr(s, "from") == s)
+    else if (strstr(s, "from") == s)
         return L_TITLE_FROM;
-    else if(strstr(s, "date") == s)
+    else if (strstr(s, "date") == s)
         return L_TITLE_DATE;
-    else if(strstr(s, "content-type") == s)
+    else if (strstr(s, "content-type") == s)
         return L_TITLE_CONTENT_TYPE;
     else
         return L_OTHER_TITLE;
@@ -105,7 +108,8 @@ static int is_multipart(char *s, char **boundary) {
     }
     if (strstr(s, "multipart")) {
         *boundary = strstr(s, "boundary");
-        if (*boundary && (isspace(*(*boundary - 1)) || *(*boundary - 1) == ';') && (*(*boundary + 8) == '=')) {
+        if (*boundary && (isspace(*(*boundary - 1)) || *(*boundary - 1) == ';')
+                                                            && (*(*boundary + 8) == '=')) {
             *boundary = *boundary + 9;
             if (**boundary == '"') {
                 ++(*boundary);
@@ -113,8 +117,7 @@ static int is_multipart(char *s, char **boundary) {
                 while ((*boundary)[i] != '"')
                     ++i;
                 (*boundary)[i] = '\0';
-            }
-            else {
+            } else {
                 int i = 0;
                 while (!isspace((*boundary)[i]) && (*boundary)[i])
                     ++i;
@@ -124,9 +127,9 @@ static int is_multipart(char *s, char **boundary) {
             (*boundary)[0] = '-';
             (*boundary)[1] = '-';
             return TRUE;
-        }
-        else
+        } else {
             return FALSE;
+        }
     }
     return FALSE;
 }
@@ -155,9 +158,9 @@ static void count_parts(FILE *f, char *type, char **boundary, char *str, int *pa
         }
         if (count_not_empty == 0)
             *parts = 0;
-    }
-    else
+    } else {
         *parts = 1;
+    }
 }
 
 static char *get_line(FILE *f) {
@@ -214,7 +217,8 @@ int parse(FILE *f, char **from, char **to, char **date, int *parts) {
                 rc = rule.action(str, from);
             else if ((lexem == L_TITLE_DATE) || (lexem == L_SPACE && last_lexem == L_TITLE_DATE))
                 rc = rule.action(str, date);
-            else if ((lexem == L_TITLE_CONTENT_TYPE) || (lexem == L_SPACE && last_lexem == L_TITLE_CONTENT_TYPE))
+            else if ((lexem == L_TITLE_CONTENT_TYPE) ||
+                                    (lexem == L_SPACE && last_lexem == L_TITLE_CONTENT_TYPE))
                 rc = rule.action(str, &type);
         }
 
@@ -234,9 +238,9 @@ int parse(FILE *f, char **from, char **to, char **date, int *parts) {
                     --len;
                 }
             }
-        }
-        else if (state == S_END)
+        } else if (state == S_END) {
             break;
+        }
     }
     count_parts(f, type, &boundary, str, parts);
 

@@ -13,4 +13,4 @@
 
 int parse(FILE *f, char **from, char **to, char **date, int *parts);
 
-#endif  // EMAIL_PARSER_H
+#endif  // PROJECT_INCLUDE_EMAIL_PARSER_H_
