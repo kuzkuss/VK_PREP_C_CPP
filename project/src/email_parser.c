@@ -41,11 +41,11 @@ static char *get_line(FILE *f);
 static rule_t syntax[S_COUNT][L_COUNT] = {
 //		   L_EMPTY_STR, L_SPACE, L_TITLE_TO, L_TITLE_FROM, L_TITLE_DATE, L_TITLE_CONTENT_TYPE, L_OTHER_TITLE
 /*S_BEGIN*/	{{S_ERR, NULL},	 {S_ERR, NULL},	 {S_TITLE, NULL},  {S_TITLE, NULL},
-                {S_TITLE, NULL},           {S_TITLE, NULL},	         {S_TITLE, NULL}},
+                       {S_TITLE, NULL},           {S_TITLE, NULL},	         {S_TITLE, NULL}},
 /*S_TITLE*/	{{S_END, NULL},  {S_ERR, NULL},  {S_VALUE, get_value},  {S_VALUE, get_value},
-                {S_VALUE, get_value},      {S_VALUE, get_value},     {S_VALUE, NULL}},
+                       {S_VALUE, get_value},      {S_VALUE, get_value},     {S_VALUE, NULL}},
 /*S_VALUE*/	{{S_END, NULL},   {S_VALUE, save_data},	 {S_TITLE, NULL},  {S_TITLE, NULL},
-                {S_TITLE, NULL},           {S_TITLE, NULL},	         {S_TITLE, NULL}},
+                       {S_TITLE, NULL},           {S_TITLE, NULL},	         {S_TITLE, NULL}},
 };
 
 static lexem_t get_lexem(char *s, size_t len) {
@@ -109,7 +109,7 @@ static int is_multipart(char *s, char **boundary) {
     if (strstr(s, "multipart")) {
         *boundary = strstr(s, "boundary");
         if (*boundary && (isspace(*(*boundary - 1)) || *(*boundary - 1) == ';')
-                                                            && (*(*boundary + 8) == '=')) {
+            && (*(*boundary + 8) == '=')) {
             *boundary = *boundary + 9;
             if (**boundary == '"') {
                 ++(*boundary);
@@ -144,9 +144,10 @@ static void count_parts(FILE *f, char *type, char **boundary, char *str, int *pa
         str = get_line(f);
         while (str) {
             size_t len = strlen(str);
-            while (str[len - 1] == '\n' || str[len - 1] == '\r') {
+            while ((str[len - 1] == '\n' || str[len - 1] == '\r')) {
                 str[len - 1] = '\0';
-                --len;
+                if (--len == 0)
+                    break;
             }
             if (len > 0) {
                 count_not_empty++;
@@ -199,9 +200,10 @@ int parse(FILE *f, char **from, char **to, char **date, int *parts) {
     if (!(str = get_line(f)))
         return ERROR;
     size_t len = strlen(str);
-    while (str[len - 1] == '\n' || str[len - 1] == '\r') {
+    while ((str[len - 1] == '\n' || str[len - 1] == '\r')) {
         str[len - 1] = '\0';
-        --len;
+        if (--len == 0)
+            break;
     }
     lexem_t last_lexem = -1;
     while (!feof(f)) {
@@ -223,7 +225,7 @@ int parse(FILE *f, char **from, char **to, char **date, int *parts) {
             else if ((lexem == L_TITLE_DATE) || (lexem == L_SPACE && last_lexem == L_TITLE_DATE))
                 rc = rule.action(str, date);
             else if ((lexem == L_TITLE_CONTENT_TYPE) ||
-                                    (lexem == L_SPACE && last_lexem == L_TITLE_CONTENT_TYPE))
+                     (lexem == L_SPACE && last_lexem == L_TITLE_CONTENT_TYPE))
                 rc = rule.action(str, &type);
         }
 
@@ -238,9 +240,10 @@ int parse(FILE *f, char **from, char **to, char **date, int *parts) {
             str = get_line(f);
             if (str) {
                 len = strlen(str);
-                while (str[len - 1] == '\n' || str[len - 1] == '\r') {
+                while ((str[len - 1] == '\n' || str[len - 1] == '\r')) {
                     str[len - 1] = '\0';
-                    --len;
+                    if (--len == 0)
+                        break;
                 }
             }
         } else if (state == S_END) {
