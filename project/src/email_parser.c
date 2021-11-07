@@ -164,10 +164,16 @@ static void count_parts(FILE *f, char *type, char **boundary, char *str, int *pa
 }
 
 static char *get_line(FILE *f) {
-    int size = 0;
-    size_t last = 0;
-    char *buf = NULL;
-    do {
+    int size = BUF_SIZE;
+    char *buf = malloc(BUF_SIZE);
+    if (!buf)
+        return NULL;
+    if (!fgets(buf, BUF_SIZE, f)) {
+        free(buf);
+        return NULL;
+    }
+    size_t len = strlen(buf);
+    while (!feof(f) && buf[len - 1] != '\n') {
         size += BUF_SIZE;
         char *tmp = realloc(buf, size);
         if (!tmp) {
@@ -175,13 +181,12 @@ static char *get_line(FILE *f) {
             return NULL;
         }
         buf = tmp;
-        if (!fgets(buf + last, BUF_SIZE, f)) {
+        if (!fgets(buf + len, BUF_SIZE, f)) {
             free(buf);
             return NULL;
         }
-        size_t len = strlen(buf);
-        last = len;
-    } while (!feof(f) && buf[last - 1] != '\n');
+        len = strlen(buf);
+    }
     return buf;
 }
 
