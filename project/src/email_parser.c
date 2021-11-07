@@ -55,18 +55,18 @@ static lexem_t get_lexem(char *s, size_t len) {
         return L_SPACE;
 
     int i = 0;
-    while (s[i] != ':') {
+    while (s[i] != ':' && s[i]) {
         s[i] = tolower(s[i]);
         i++;
     }
 
-    if (strstr(s, "to") == s)
+    if (strstr(s, "to:") == s)
         return L_TITLE_TO;
-    else if (strstr(s, "from") == s)
+    else if (strstr(s, "from:") == s)
         return L_TITLE_FROM;
-    else if (strstr(s, "date") == s)
+    else if (strstr(s, "date:") == s)
         return L_TITLE_DATE;
-    else if (strstr(s, "content-type") == s)
+    else if (strstr(s, "content-type:") == s)
         return L_TITLE_CONTENT_TYPE;
     else
         return L_OTHER_TITLE;
