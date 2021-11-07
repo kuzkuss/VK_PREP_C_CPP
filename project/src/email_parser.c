@@ -144,7 +144,7 @@ static void count_parts(FILE *f, char *type, char **boundary, char *str, int *pa
         str = get_line(f);
         while (str) {
             size_t len = strlen(str);
-            if (str[len - 1] == '\n') {
+            while (str[len - 1] == '\n' || str[len - 1] == '\r') {
                 str[len - 1] = '\0';
                 --len;
             }
@@ -199,7 +199,7 @@ int parse(FILE *f, char **from, char **to, char **date, int *parts) {
     if (!(str = get_line(f)))
         return ERROR;
     size_t len = strlen(str);
-    if (str[len - 1] == '\n') {
+    while (str[len - 1] == '\n' || str[len - 1] == '\r') {
         str[len - 1] = '\0';
         --len;
     }
@@ -238,7 +238,7 @@ int parse(FILE *f, char **from, char **to, char **date, int *parts) {
             str = get_line(f);
             if (str) {
                 len = strlen(str);
-                if (str[len - 1] == '\n') {
+                while (str[len - 1] == '\n' || str[len - 1] == '\r') {
                     str[len - 1] = '\0';
                     --len;
                 }
