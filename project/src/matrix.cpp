@@ -26,7 +26,7 @@ namespace prep {
 	columns = c;
 
         for (size_t i = 0; i < rows; ++i) {
-            mtr.emplace_back(std::vector<double>(columns));
+            mtr.push_back(std::vector<double>(columns));
         }
 
         for (size_t i = 0; i < rows; ++i)
@@ -234,7 +234,7 @@ namespace prep {
     }
 
     std::ostream& operator<<(std::ostream& os, const Matrix& matrix) {
-        // os << matrix.rows << ' ' << matrix.columns << std::endl;
+        os << matrix.rows << ' ' << matrix.columns << std::endl;
         for (size_t i = 0; i < matrix.rows; i++) {
             for (size_t j = 0; j < matrix.columns; j++) {
                 os << std::setprecision(std::numeric_limits<double>::max_digits10) << matrix.mtr[i][j];
