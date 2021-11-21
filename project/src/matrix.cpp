@@ -176,7 +176,7 @@ namespace prep {
         for (size_t i = 0; i < this->rows; ++i) {
             this->fill_new_matrix(&new_mtr, this->rows, i, 0);
             double cur_det = new_mtr.det();
-            determinant += this->mtr[0][i] * (((i + 3) % 2) - ((i + 2) % 2)) * cur_det;
+            determinant += this->mtr[0][i] * (double((i + 3) % 2) - double((i + 2) % 2)) * cur_det;
         }
 
         return determinant;
@@ -196,7 +196,7 @@ namespace prep {
             for (size_t j = 0; j < this->rows; ++j) {
                 this->fill_new_matrix(&new_mtr, this->rows, i, j);
                 double res = new_mtr.det();
-                adj_mtr.mtr[i][j] = (((i + j + 3) % 2) - ((i + j + 2) % 2)) * res;
+                adj_mtr.mtr[i][j] = (double((i + j + 3) % 2) - double((i + j + 2) % 2)) * res;
             }
         return adj_mtr;
     }
