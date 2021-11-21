@@ -237,7 +237,7 @@ namespace prep {
         os << matrix.rows << ' ' << matrix.columns << std::endl;
         for (size_t i = 0; i < matrix.rows; i++) {
             for (size_t j = 0; j < matrix.columns; j++) {
-                os << std::setprecision(std::numeric_limits<double>::max_digits10) << matrix.mtr[i][j];
+                os << std::setprecision(7) << matrix.mtr[i][j];
                 if (i < matrix.rows - 1 || j < matrix.columns - 1)
                     os << ' ';
             }
