@@ -7,7 +7,7 @@
 
 namespace prep {
     Matrix::Matrix(size_t num_rows, size_t num_cols): rows(num_rows), columns(num_cols) {
-        for (int i = 0; i < rows; ++i) {
+        for (size_t i = 0; i < rows; ++i) {
             mtr.emplace_back(std::vector<double>(columns));
         }
     }
@@ -25,12 +25,12 @@ namespace prep {
 	rows = r;
 	columns = c;
 
-        for (int i = 0; i < rows; ++i) {
+        for (size_t i = 0; i < rows; ++i) {
             mtr.emplace_back(std::vector<double>(columns));
         }
 
-        for (int i = 0; i < rows; ++i)
-            for (int j = 0; j < columns; ++j)
+        for (size_t i = 0; i < rows; ++i)
+            for (size_t j = 0; j < columns; ++j)
                 if (!(is >> mtr[i][j])) {
                     throw InvalidMatrixStream();
                 }
@@ -60,8 +60,8 @@ namespace prep {
         if (rows != rhs.rows || columns != rhs.columns)
             res = false;
 
-        for (int i = 0; i < rows && res; i++) {
-            for (int j = 0; j < columns && res; j++) {
+        for (size_t i = 0; i < rows && res; i++) {
+            for (size_t j = 0; j < columns && res; j++) {
                 if (fabs(rhs.mtr[i][j] - mtr[i][j]) > std::numeric_limits<double>::epsilon()) {
                     res = false;
                 }
@@ -73,10 +73,10 @@ namespace prep {
     bool Matrix::operator!=(const Matrix& rhs) const {
         bool res = true;
 
-        int count_eq_elements = 0;
+        size_t count_eq_elements = 0;
         if (rows == rhs.rows && columns == rhs.columns) {
-            for (int i = 0; i < rows; i++) {
-                for (int j = 0; j < columns; j++) {
+            for (size_t i = 0; i < rows; i++) {
+                for (size_t j = 0; j < columns; j++) {
                     if (fabs(rhs.mtr[i][j] - mtr[i][j]) <= std::numeric_limits<double>::epsilon()) {
                         count_eq_elements++;
                     }
@@ -147,11 +147,11 @@ namespace prep {
     }
 
     void Matrix::fill_new_matrix(Matrix *new_matrix, size_t n, size_t del_col, size_t del_row) const {
-        int new_i = 0;
-        int new_j = 0;
+        size_t new_i = 0;
+        size_t new_j = 0;
 
-        for (int i = 0; i < n; ++i)
-            for (int j = 0; j < n; ++j) {
+        for (size_t i = 0; i < n; ++i)
+            for (size_t j = 0; j < n; ++j) {
                 if (j != del_col && i != del_row) {
                     new_matrix->mtr[new_i][new_j] = this->mtr[i][j];
                     if (++new_j == n - 1) {
@@ -234,8 +234,8 @@ namespace prep {
     }
 
     std::ostream& operator<<(std::ostream& os, const Matrix& matrix) {
-        for (int i = 0; i < matrix.rows; i++) {
-            for (int j = 0; j < matrix.columns; j++) {
+        for (size_t i = 0; i < matrix.rows; i++) {
+            for (size_t j = 0; j < matrix.columns; j++) {
                 os << std::setprecision(std::numeric_limits<double>::max_digits10) << matrix.mtr[i][j];
                 if (i < matrix.rows - 1 || j < matrix.columns - 1)
                     os << ' ';
