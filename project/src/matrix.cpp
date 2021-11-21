@@ -118,7 +118,7 @@ namespace prep {
         if (this->columns != rhs.rows)
             throw DimensionMismatch(*this, rhs);
 
-        Matrix res_mtr(this->rows, this->columns);
+        Matrix res_mtr(this->rows, rhs.columns);
 
         for (size_t i = 0; i < this->rows; ++i)
             for (size_t j = 0; j < this->columns; ++j)
@@ -234,6 +234,7 @@ namespace prep {
     }
 
     std::ostream& operator<<(std::ostream& os, const Matrix& matrix) {
+        os << matrix.rows << ' ' << matrix.columns << std::endl;
         for (size_t i = 0; i < matrix.rows; i++) {
             for (size_t j = 0; j < matrix.columns; j++) {
                 os << std::setprecision(std::numeric_limits<double>::max_digits10) << matrix.mtr[i][j];
