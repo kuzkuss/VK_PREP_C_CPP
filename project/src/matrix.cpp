@@ -176,7 +176,7 @@ namespace prep {
         for (size_t i = 0; i < this->rows; ++i) {
             this->fill_new_matrix(&new_mtr, this->rows, i, 0);
             double cur_det = new_mtr.det();
-            determinant += this->mtr[0][i] * pow((-1), i + 2) * cur_det;
+            determinant += this->mtr[0][i] * (((i + 3) % 2) - ((i + 2) % 2)) * cur_det;
         }
 
         return determinant;
@@ -196,7 +196,7 @@ namespace prep {
             for (size_t j = 0; j < this->rows; ++j) {
                 this->fill_new_matrix(&new_mtr, this->rows, i, j);
                 double res = new_mtr.det();
-                adj_mtr.mtr[i][j] = pow((-1), i + j + 2) * res;
+                adj_mtr.mtr[i][j] = (((i + j + 3) % 2) - ((i + j + 2) % 2)) * res;
             }
         return adj_mtr;
     }
@@ -237,7 +237,7 @@ namespace prep {
         os << matrix.rows << ' ' << matrix.columns << std::endl;
         for (size_t i = 0; i < matrix.rows; i++) {
             for (size_t j = 0; j < matrix.columns; j++) {
-                os << std::setprecision(7) << matrix.mtr[i][j];
+                os << std::setprecision(std::numeric_limits<double>::max_digits10) << matrix.mtr[i][j];
                 if (i < matrix.rows - 1 || j < matrix.columns - 1)
                     os << ' ';
             }
