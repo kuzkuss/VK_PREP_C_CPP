@@ -1,5 +1,6 @@
 #include <cmath>
 #include <iomanip>
+#include <limits>
 
 #include "matrix.h"
 #include "exceptions.h"
@@ -145,14 +146,14 @@ namespace prep {
         return transp_mtr;
     }
 
-    void Matrix::fill_new_matrix(Matrix &new_matrix, size_t n, size_t del_col, size_t del_row) const {
+    void Matrix::fill_new_matrix(Matrix *new_matrix, size_t n, size_t del_col, size_t del_row) const {
         int new_i = 0;
         int new_j = 0;
 
         for (int i = 0; i < n; ++i)
             for (int j = 0; j < n; ++j) {
                 if (j != del_col && i != del_row) {
-                    new_matrix.mtr[new_i][new_j] = this->mtr[i][j];
+                    new_matrix->mtr[new_i][new_j] = this->mtr[i][j];
                     if (++new_j == n - 1) {
                         new_j = 0;
                         ++new_i;
@@ -173,7 +174,7 @@ namespace prep {
 
         double determinant = 0.0;
         for (size_t i = 0; i < this->rows; ++i) {
-            this->fill_new_matrix(new_mtr, this->rows, i, 0);
+            this->fill_new_matrix(&new_mtr, this->rows, i, 0);
             double cur_det = new_mtr.det();
             determinant += this->mtr[0][i] * pow((-1), i + 2) * cur_det;
         }
@@ -193,7 +194,7 @@ namespace prep {
 
         for (size_t i = 0; i < this->columns; ++i)
             for (size_t j = 0; j < this->rows; ++j) {
-                this->fill_new_matrix(new_mtr, this->rows, i, j);
+                this->fill_new_matrix(&new_mtr, this->rows, i, j);
                 double res = new_mtr.det();
                 adj_mtr.mtr[i][j] = pow((-1), i + j + 2) * res;
             }
@@ -243,5 +244,5 @@ namespace prep {
         }
         return os;
     }
-}
+}  // namespace prep
 
