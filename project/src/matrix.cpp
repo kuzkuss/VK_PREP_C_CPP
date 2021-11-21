@@ -138,7 +138,7 @@ namespace prep {
     }
 
     Matrix Matrix::transp() const {
-        Matrix transp_mtr(this->rows, this->columns);
+        Matrix transp_mtr(this->columns, this->rows);
 
         for (size_t i = 0; i < this->columns; ++i)
             for (size_t j = 0; j < this->rows; ++j)
