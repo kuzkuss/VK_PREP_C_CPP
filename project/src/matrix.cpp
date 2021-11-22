@@ -5,6 +5,8 @@
 #include "matrix.h"
 #include "exceptions.h"
 
+#define EPS 1e-07
+
 namespace prep {
     Matrix::Matrix(size_t num_rows, size_t num_cols): rows(num_rows), columns(num_cols) {
         for (size_t i = 0; i < rows; ++i) {
@@ -62,7 +64,7 @@ namespace prep {
 
         for (size_t i = 0; i < rows && res; i++) {
             for (size_t j = 0; j < columns && res; j++) {
-                if (fabs(rhs.mtr[i][j] - mtr[i][j]) > std::numeric_limits<double>::epsilon()) {
+                if (fabs(rhs.mtr[i][j] - mtr[i][j]) > EPS) {
                     res = false;
                 }
             }
@@ -77,7 +79,7 @@ namespace prep {
         if (rows == rhs.rows && columns == rhs.columns) {
             for (size_t i = 0; i < rows; i++) {
                 for (size_t j = 0; j < columns; j++) {
-                    if (fabs(rhs.mtr[i][j] - mtr[i][j]) <= std::numeric_limits<double>::epsilon()) {
+                    if (fabs(rhs.mtr[i][j] - mtr[i][j]) <= EPS) {
                         count_eq_elements++;
                     }
                 }
@@ -197,7 +199,6 @@ namespace prep {
                 this->fill_new_matrix(&new_mtr, this->rows, i, j);
                 double res = new_mtr.det();
                 adj_mtr.mtr[i][j] = (double((i + j + 3) % 2) - double((i + j + 2) % 2)) * res;
-                adj_mtr.mtr[i][j] = roundl(adj_mtr.mtr[i][j] * 10000000) / 10000000;
             }
         return adj_mtr;
     }
@@ -239,7 +240,7 @@ namespace prep {
         for (size_t i = 0; i < matrix.rows; i++) {
             for (size_t j = 0; j < matrix.columns; j++) {
                 os << std::setprecision(std::numeric_limits<double>::max_digits10)
-                   << static_cast<long double>(matrix.mtr[i][j]);
+                   << matrix.mtr[i][j];
                 if (i < matrix.rows - 1 || j < matrix.columns - 1)
                     os << ' ';
             }
