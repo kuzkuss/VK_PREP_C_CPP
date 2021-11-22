@@ -1,61 +1,49 @@
+#include <stdlib.h>
 #include "utils.h"
+#include "is_primer.h"
+#include "print_numbers.h"
 
 #define ERR_ARGS_COUNT (-1)
 #define ERR_WRONG_FLG (-2)
 
-#define TST_FOO_FIX     1
-#define TST_FOO_IMPL    2
-#define TST_MOD_IMPL    3
-
-
-/* NOTE(stitaevskiy):
- * We use `atoi` function just for simplification and code reducing.
- * This function doesn't report conversation errors.
- * For safety program we recommend using `strtol` and its analogs.
- * (See `man atoi` and `man strtol` for more info).
- *
- * const char str_num[] = "1234";
- * char* end = NULL;
- * int val = (int) strtol(str_num, &end, 0);
- * if (end != '\0') {
- *     //ERROR
- * }
- *
- * */
-
 int main(int argc, const char** argv) {
+    enum action {COUNT_TICKS = 1, EXPONENTIATION, PRIME_CHECK, PRINT_RANGE};
+
     if (argc < 3) {
         return ERR_ARGS_COUNT;
     }
 
-    int Test_case = atoi(argv[1]);
-    const char* data;
-    data = argv[2];
+    int test_case = atoi(argv[1]);
+    const char* data = argv[2];
 
-    switch (Test_case) {
-        case TST_FOO_FIX: {
+    switch (test_case) {
+        case COUNT_TICKS: {
             int to = atoi(data);
             size_t ticks_count = timer_from(to);
-            printf("%d\n", ticks_count);
+            printf("%zu\n", ticks_count);
             break;
         }
-        case TST_FOO_IMPL: {
-            if (argc = 4) {
-                // int base = atoi(data);
-                // int pow =  atoi(argv[3]);
-                // int res = custom_pow(base, pow);    // TODO: Implement me
-
-                // printf("%i\n", res);
-            } else {
+        case EXPONENTIATION: {
+            if (argc != 4)
                 return ERR_ARGS_COUNT;
-            }
-        }
-        case TST_MOD_IMPL: {
-            // int num = atoi(data);
 
-            // TODO: Print to stdout `1` if `num` is prime number and `0` otherwise
-            // This function MUST be implemented in
-            // a separate C-module (not in `main` or `utils` module)
+            int base = atoi(data);
+            int pow =  atoi(argv[3]);
+            int res = (int)custom_pow(base, pow);
+
+            printf("%d\n", res);
+
+            break;
+        }
+        case PRIME_CHECK: {
+            int num = atoi(data);
+            printf("%d", is_prime_num(num));
+            break;
+        }
+        case PRINT_RANGE: {
+            int num = atoi(data);
+            print_from_one_to_n(num);
+            break;
         }
         default: {
             return ERR_WRONG_FLG;
