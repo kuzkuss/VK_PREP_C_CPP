@@ -1,15 +1,26 @@
 #include <stdio.h>
 #include <stdlib.h>
+
 #include "print_numbers.h"
 
-void print_all_numbers(int n) {
-    if (n == 1) {
-        printf("%d", n);
-    } else {
-        if (n <= 0)
-            print_all_numbers(n + 1);
-        else
-            print_all_numbers(n - 1);
-        printf(" %d", n);
-    }
+#define FROM 1
+
+static void print_range(int from, int to);
+
+void print_from_one_to_n(int n) {
+    print_range(1, n);
 }
+
+static void print_range(int from, int to) {
+    if (to == FROM) {
+        printf("%d", to);
+        return;
+    }
+    if (to < FROM)
+        print_range(from, to + 1);
+    else
+        print_range(from, to - 1);
+
+    printf(" %d", to);
+}
+
