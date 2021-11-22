@@ -31,7 +31,7 @@ namespace prep {
 
         for (size_t i = 0; i < rows; ++i)
             for (size_t j = 0; j < columns; ++j)
-                if (!(is >> std::setprecision(std::numeric_limits<double>::max_digits10) >> mtr[i][j])) {
+                if (!(is >> mtr[i][j])) {
                     throw InvalidMatrixStream();
                 }
     }
@@ -197,6 +197,7 @@ namespace prep {
                 this->fill_new_matrix(&new_mtr, this->rows, i, j);
                 double res = new_mtr.det();
                 adj_mtr.mtr[i][j] = (double((i + j + 3) % 2) - double((i + j + 2) % 2)) * res;
+                adj_mtr.mtr[i][j] = roundl(adj_mtr.mtr[i][j] * 10000000) / 10000000;
             }
         return adj_mtr;
     }
@@ -237,7 +238,8 @@ namespace prep {
         os << matrix.rows << ' ' << matrix.columns << std::endl;
         for (size_t i = 0; i < matrix.rows; i++) {
             for (size_t j = 0; j < matrix.columns; j++) {
-                os << std::setprecision(std::numeric_limits<double>::max_digits10) << matrix.mtr[i][j];
+                os << std::setprecision(std::numeric_limits<double>::max_digits10)
+                   << static_cast<long double>(matrix.mtr[i][j]);
                 if (i < matrix.rows - 1 || j < matrix.columns - 1)
                     os << ' ';
             }
