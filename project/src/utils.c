@@ -14,6 +14,7 @@ size_t timer_from(int from) {
     }
 
     puts("0");
+    counter++;
 
     return counter;
 }
