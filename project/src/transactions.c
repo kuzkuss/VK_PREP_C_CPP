@@ -13,7 +13,6 @@ int transaction_read(FILE *in, transaction_t *transaction) {
         }
     }
 
-    printf("%d", rc);
     return rc;
 }
 
@@ -42,8 +41,8 @@ int transactions_input_output_from_in_to_out(FILE *in, FILE *out) {
         }
     } while (rc == OK);
 
-    if (!feof(in))
-        rc = INPUT_OUTPUT_ERROR;
+    if (feof(in))
+        rc = OK;
 
     return rc;
 }

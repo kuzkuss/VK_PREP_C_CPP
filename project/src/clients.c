@@ -4,6 +4,31 @@
 #include "clients.h"
 #include "errors.h"
 
+#define BUF_SIZE 1
+
+static char *get_until_space(FILE *f_in);
+static void skip_spaces(FILE *in);
+
+static char *get_until_space(FILE *f_in) {
+    int size = BUF_SIZE;
+    int len = 0;
+    char c;
+    char *buf = malloc(size);
+    while (!isspace(c = fgetc(f_in)) && !feof(f_in)) {
+        size += BUF_SIZE;
+        char *tmp = realloc(buf, size);
+        if (!tmp) {
+            free(buf);
+            return NULL;
+        }
+        buf = tmp;
+        buf[len] = c;
+        len++;
+    }
+    buf[len] = '\0';
+    return buf;
+}
+
 static void skip_spaces(FILE *in) {
     char c = fgetc(in);
 
@@ -16,33 +41,30 @@ static void skip_spaces(FILE *in) {
 }
 
 int client_read(FILE *in, client_t *client) {
-    size_t n = 0;
     if (!in || !client)
         return INCORRECT_ARGS;
 
-    if (fscanf(in, "%d", &client->number) != 1 && client->number <= 0)
+    if (fscanf(in, "%d", &client->number) != 1 || client->number <= 0)
         return INPUT_OUTPUT_ERROR;
 
     skip_spaces(in);
 
-    int rc = getdelim(&client->name, &n, ' ', in);
-    if (rc < 1)
+    client->name = get_until_space(in);
+    if (!client->name)
         return INPUT_OUTPUT_ERROR;
 
     skip_spaces(in);
 
-    n = 0;
-    rc = getdelim(&client->surname, &n, ' ', in);
-    if (rc < 1) {
+    client->surname = get_until_space(in);
+    if (!client->surname) {
         free(client->name);
         return INPUT_OUTPUT_ERROR;
     }
 
     skip_spaces(in);
 
-    n = 0;
-    rc = getdelim(&client->address, &n, ' ', in);
-    if (rc < 1) {
+    client->address = get_until_space(in);
+    if (!client->address) {
         free(client->name);
         free(client->surname);
         return INPUT_OUTPUT_ERROR;
@@ -50,16 +72,15 @@ int client_read(FILE *in, client_t *client) {
 
     skip_spaces(in);
 
-    n = 0;
-    rc = getdelim(&client->telephone, &n, ' ', in);
-    if (rc < 1) {
+    client->telephone = get_until_space(in);
+    if (!client->telephone) {
         free(client->name);
         free(client->surname);
         free(client->address);
         return INPUT_OUTPUT_ERROR;
     }
 
-    if (fscanf(in, "%lf%lf%lf", &client->indebtedness, &client->credit_limit, &client->cash_payments) != 3
+    if (fscanf(in, "%lf%lf%lf\n", &client->indebtedness, &client->credit_limit, &client->cash_payments) != 3
                     || client->indebtedness < 0 || client->credit_limit < 0 || client->cash_payments < 0) {
         return INPUT_OUTPUT_ERROR;
     }
@@ -113,8 +134,8 @@ int clients_input_output_from_in_to_out(FILE *in, FILE *out) {
         free(client.telephone);
     } while (rc == OK);
 
-    if (!feof(in))
-        rc = INPUT_OUTPUT_ERROR;
+    if (feof(in))
+        rc = OK;
 
     return rc;
 }

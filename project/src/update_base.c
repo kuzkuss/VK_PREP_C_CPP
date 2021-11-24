@@ -11,6 +11,8 @@ int update_info(FILE *file_in_clients, FILE *file_in_transactions, FILE *file_ou
     client_t client = { 0 };
     transaction_t transaction = { 0 };
 
+    int rc = INPUT_OUTPUT_ERROR;
+
     while (client_read(file_in_clients, &client) == OK) {
         while (transaction_read(file_in_transactions, &transaction) == OK) {
             if (client.number == transaction.number && transaction.cash_payments != 0)
@@ -24,9 +26,9 @@ int update_info(FILE *file_in_clients, FILE *file_in_transactions, FILE *file_ou
         free(client.telephone);
     }
 
-    if (!feof(file_in_clients) || !feof(file_in_transactions))
-        return INPUT_OUTPUT_ERROR;
+    if (feof(file_in_clients))
+        rc = OK;
 
-    return OK;
+    return rc;
 }
 
