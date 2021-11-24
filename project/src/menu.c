@@ -6,9 +6,9 @@
 #include "transactions.h"
 #include "update_base.h"
 
-static const char *filename_transactions = "transactions.dat";
-static const char *filename_clients = "clients.dat";
-static const char *filename_new_base = "new_base.dat";
+static const char *filename_transactions = "transaction.dat";
+static const char *filename_clients = "record.dat";
+static const char *filename_new_base = "blackrecord.dat";
 
 int client_base_processing(void) {
     FILE *file_clients = NULL;
