@@ -1,17 +1,32 @@
-#include "update_base.h"
-#include "output.h"
+#include <stdlib.h>
 
-void update_info(FILE *f_clients, FILE *f_transactions, FILE *blackrecord,
-                                                                Data *client_data, Data *transfer) {
-    while (fscanf(f_clients, FORMAT_STRING, &client_data->number, client_data->name,
-              client_data->surname, client_data->address, client_data->tel_number,
-              &client_data->indebtedness, &client_data->credit_limit, &client_data->cash_payments) == 8) {
-        while (fscanf(f_transactions, "%d %lf", &transfer->number, &transfer->cash_payments) == 2) {
-            if (client_data->number == transfer->number && transfer->cash_payments != 0)
-                client_data->credit_limit += transfer->cash_payments;
+#include "clients.h"
+#include "errors.h"
+#include "update_base.h"
+#include "transactions.h"
+
+int update_info(FILE *file_in_clients, FILE *file_in_transactions, FILE *file_out_new_base) {
+    if (!file_in_clients || !file_in_transactions || !file_out_new_base)
+        return INPUT_OUTPUT_ERROR;
+    client_t client = { 0 };
+    transaction_t transaction = { 0 };
+
+    while (client_read(file_in_clients, &client) == OK) {
+        while (transaction_read(file_in_transactions, &transaction) == OK) {
+            if (client.number == transaction.number && transaction.cash_payments != 0)
+                client.credit_limit += transaction.cash_payments;
         }
-        print_to_file(blackrecord, client_data);
-        rewind(f_transactions);
+        client_print(file_out_new_base, &client);
+        rewind(file_in_transactions);
+        free(client.name);
+        free(client.surname);
+        free(client.address);
+        free(client.telephone);
     }
+
+    if (!feof(file_in_clients) || !feof(file_in_transactions))
+        return INPUT_OUTPUT_ERROR;
+
+    return OK;
 }
 
