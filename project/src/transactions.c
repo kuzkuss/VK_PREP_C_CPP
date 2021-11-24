@@ -20,8 +20,8 @@ int transaction_print(FILE *out, const transaction_t *transaction) {
     if (!out || !transaction)
         return INPUT_OUTPUT_ERROR;
 
-    fprintf(out, "%-12d", transaction->number);
-    fprintf(out, "%12.2f\n", transaction->cash_payments);
+    fprintf(out, "%-3d", transaction->number);
+    fprintf(out, "%-6.2lf\n", transaction->cash_payments);
     return OK;
 }
 
