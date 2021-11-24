@@ -1,6 +1,7 @@
 #ifndef PROJECT_INCLUDE_CLIENTS_H_
 #define PROJECT_INCLUDE_CLIENTS_H_
 
+#define _GNU_SOURCE
 #include <stdio.h>
 
 typedef struct {
