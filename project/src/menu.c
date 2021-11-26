@@ -20,7 +20,7 @@ int client_base_processing(void) {
     while (scanf("%d", &choice) == 1) {
         switch (choice) {
             case 1: {
-                file_clients = fopen(filename_clients, "r+");
+                file_clients = fopen(filename_clients, "w");
                 if (!file_clients) {
                     return FILE_ERROR;
                 }
@@ -32,7 +32,7 @@ int client_base_processing(void) {
                 break;
             }
             case 2: {
-                file_transactions = fopen(filename_transactions, "r+");
+                file_transactions = fopen(filename_transactions, "w");
                 if (!file_transactions) {
                     return FILE_ERROR;
                 }
