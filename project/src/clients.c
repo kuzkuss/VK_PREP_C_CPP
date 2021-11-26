@@ -36,7 +36,7 @@ static void skip_spaces(FILE *in) {
         c = fgetc(in);
     }
 
-    if (isalpha(c))
+    if (!feof(in))
         ungetc(c, in);
 }
 
