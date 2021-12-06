@@ -38,6 +38,24 @@ Client::~Client() {
 
 ErrorStatus Client::ConnectTo(const EndPoint &end_point) {
     // TODO - создать сокет и подключиться к серверу, вернуть ошибку, если не получилось
+
+    struct sockaddr_in addr;
+    addr.sin_family = AF_INET;
+    addr.sin_port = htons(end_point.port);
+
+    if (!inet_aton(std::string(end_point.host).c_str(), &addr.sin_addr))
+        return ErrorStatus::kError;
+
+    impl_->socket_fd = socket(AF_INET, SOCK_STREAM, 0);
+
+    if (impl_->socket_fd < 0)
+        return ErrorStatus::kError;
+
+    if (connect(impl_->socket_fd, (struct sockaddr *) &addr, sizeof(addr)))
+        return ErrorStatus::kError;
+
+    // IMPL
+
     impl_->connected = true;
     return ErrorStatus::kNoError;
 }

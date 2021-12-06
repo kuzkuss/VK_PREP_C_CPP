@@ -154,6 +154,12 @@ inline ReadStatus ReadFromNetwork(int socket_fd, std::vector<std::byte> &network
 inline ErrorStatus SendToNetwork(int socket_fd, const std::vector<std::byte> &message_data) {
     // TODO - нужно отправить массив байт через сокет
     // если произошла ошибка - вернуть
+
+    if (write(socket_fd, message_data.data(), message_data.size()) < 0)
+        return ErrorStatus::kError;
+
+    // IMPL
+
     return ErrorStatus::kNoError;
 }
 
