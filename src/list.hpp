@@ -130,7 +130,7 @@ class list {
      public:
         list_node() noexcept;
         list_node(T value) noexcept;
-        list_node(list_node &src_node) noexcept :
+        list_node(const list_node &src_node) noexcept :
             data(src_node->data), prev(src_node->prev), next(src_node->next) {}
         ~list_node() = default;
 
