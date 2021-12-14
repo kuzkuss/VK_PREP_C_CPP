@@ -1,17 +1,16 @@
 #pragma once // NOLINT
 #include <iterator>
-
+#include <limits>
 
 namespace task {
-
 
 template<class T>
 class list {
     struct list_node;
-public:
+ public:
     class iterator {
         friend class list<T>;
-    public:
+     public:
         using difference_type = ptrdiff_t;
         using value_type = T;
         using pointer = T*;
@@ -20,7 +19,7 @@ public:
 
         iterator() noexcept : node{nullptr} {}
         iterator(const iterator &it) noexcept : node{it.node} {}
-        iterator(list_node &node) noexcept : node(node) {}
+        iterator(list_node *node) noexcept : node{node} {}
         iterator& operator=(const iterator&) noexcept;
 
         iterator& operator++();
@@ -33,17 +32,13 @@ public:
         bool operator==(iterator other) const;
         bool operator!=(iterator other) const;
 
-    private:
-
+     private:
         list_node *node;
-
     };
-
-    friend class iterator;
 
     class const_iterator {
         friend class list<T>;
-    public:
+     public:
         using difference_type = ptrdiff_t;
         using value_type = T;
         using pointer = const T*;
@@ -51,9 +46,10 @@ public:
         using iterator_category = std::bidirectional_iterator_tag;
 
         const_iterator() noexcept : node{nullptr} {}
-        const_iterator(const_iterator &it) noexcept : node(it.node) {}
-        const_iterator(list_node &node) noexcept : node(node) {}
-        const_iterator& operator=(const_iterator&) noexcept;
+        const_iterator(const iterator &it) noexcept : node{it.node} {}
+        const_iterator(const const_iterator &it) noexcept : node{it.node} {}
+        const_iterator(list_node *node) noexcept : node{node} {}
+        const_iterator& operator=(const const_iterator&) noexcept;
 
         const_iterator& operator++();
         const_iterator operator++(int);
@@ -65,10 +61,8 @@ public:
         bool operator==(const_iterator other) const;
         bool operator!=(const_iterator other) const;
 
-    private:
-
-        const list_node *node;
-        friend class list<T>;
+     private:
+        list_node *node;
     };
 
     using reverse_iterator = std::reverse_iterator<iterator>;
@@ -90,30 +84,29 @@ public:
     const T& back() const { return last->prev->data; }
 
 
-    iterator begin() const;
-    iterator end() const;
+    iterator begin() const noexcept;
+    iterator end() const noexcept;
 
-    const_iterator cbegin() const;
-    const_iterator cend() const;
+    const_iterator cbegin() const noexcept;
+    const_iterator cend() const noexcept;
 
-    reverse_iterator rbegin() const;
-    reverse_iterator rend() const;
+    reverse_iterator rbegin() const noexcept;
+    reverse_iterator rend() const noexcept;
 
-    const_reverse_iterator crbegin() const;
-    const_reverse_iterator crend() const;
+    const_reverse_iterator crbegin() const noexcept;
+    const_reverse_iterator crend() const noexcept;
 
 
-    bool empty() const;
-    size_t size() const;
-    size_t max_size() const;
-    void clear();
+    bool empty() const noexcept;
+    size_t size() const noexcept;
+    size_t max_size() const noexcept { return max_size_list; }
+    void clear() noexcept;
 
     iterator insert(const_iterator pos, const T& value);
     iterator insert(const_iterator pos, size_t count, const T& value);
 
     iterator erase(const_iterator pos);
     iterator erase(const_iterator first, const_iterator last);
-
 
     void push_back(const T& value);
     void pop_back();
@@ -132,264 +125,156 @@ public:
     void unique();
     void sort();
 
-    // Your code goes here?..
-
-private:
-
+ private:
     struct list_node {
-
-        friend class iterator;
-        friend class list<T>;
-
-    public:
-
+     public:
         list_node() noexcept;
         list_node(T value) noexcept;
-        list_node(list_node &src_node) noexcept : data(src_node->data), prev(src_node->prev), next(src_node->next) {}
-        ~list_node() noexcept;
+        list_node(list_node &src_node) noexcept :
+            data(src_node->data), prev(src_node->prev), next(src_node->next) {}
+        ~list_node() = default;
 
         T data;
         list_node *prev;
         list_node *next;
-
     };
-
-    friend struct list_node;
 
     list_node *first;
     list_node *last;
 
+    void front_back_split(list &back, size_t size_list);
+
+    size_t max_size_list = std::numeric_limits<size_t>::max() / sizeof(T);
 };
 
 template<class T>
-typename list<T>::list_node<T>::list_node() noexcept
-{
+list<T>::list_node::list_node() noexcept {
     prev = nullptr;
     next = nullptr;
     data = T{};
 }
 
 template<class T>
-typename list<T>::list_node<T>::list_node(T value) noexcept : data{value} {
+list<T>::list_node::list_node(T value) noexcept : data{value} {
     prev = nullptr;
     next = nullptr;
 }
 
 template<class T>
-typename list<T>::iterator& list<T>::iterator::operator=(const iterator &it) noexcept
-{
+typename list<T>::iterator& list<T>::iterator::operator=(const iterator &it) noexcept {
     node = it.node;
     return *this;
 }
 
 template<class T>
-typename list<T>::iterator& list<T>::iterator::operator++()
-{
-    //if (!node)
-        //throw "something";
-    //if (!node->next)
-        //throw "end of list";
+typename list<T>::iterator& list<T>::iterator::operator++() {
     node = node->next;
     return *this;
 }
 
 template<class T>
-typename list<T>::iterator list<T>::iterator::operator++(int)
-{
-    //if (!node)
-        //throw "something";
-    //if (!node->next)
-        //throw "end of list";
+typename list<T>::iterator list<T>::iterator::operator++(int) {
     iterator old_it = *this;
     node = node->next;
     return old_it;
 }
 
 template<class T>
-typename list<T>::iterator<T>::reference list<T>::iterator::operator*() const
-{
-    //if (!node)
-        //throw "something";
+typename list<T>::iterator::reference list<T>::iterator::operator*() const {
     return node->data;
 }
 
 template<class T>
-/*T**/pointer list<T>::iterator::operator->() const
-{
-    //if (!node)
-        //throw "something";
+typename list<T>::iterator::pointer list<T>::iterator::operator->() const {
     return &node->data;
 }
 
 template<class T>
-iterator& list<T>::iterator::operator--()
-{
-    //if (!node)
-        //throw "something";
-    //if (!node->prev)
-        //throw "beginning of list";
+typename list<T>::iterator& list<T>::iterator::operator--() {
     node = node->prev;
     return *this;
 }
 
 template<class T>
-iterator list<T>::iterator::operator--(int)
-{
-    //if (!node)
-        //throw "something";
-    //if (!node->prev)
-        //throw "end of list";
+typename list<T>::iterator list<T>::iterator::operator--(int) {
     iterator old_it = *this;
     node = node->prev;
     return old_it;
 }
 
 template<class T>
-bool list<T>::iterator::operator==(iterator other) const
-{
+bool list<T>::iterator::operator==(iterator other) const {
     return (node == other.node);
 }
 
 template<class T>
-bool list<T>::iterator::operator!=(iterator other) const
-{
+bool list<T>::iterator::operator!=(iterator other) const {
     return (node != other.node);
 }
 
-//template<class T>
-//typename list<T>::iterator::ptrdiff_t list<T>::iterator::distance(typename list<T>::iterator first, typename list<T>::iterator last) {
-//    ptrdiff_t result = 0;
-//    while (first != last) {
-//        ++first;
-//        ++result;
-//    }
-//    return result;
-//}
-
-//const_iterator
-
 template<class T>
-const_iterator& list<T>::const_iterator::operator=(const const_iterator &it) noexcept
-{
+typename list<T>::const_iterator& list<T>::const_iterator::operator=(const const_iterator &it) noexcept {
     node = it.node;
     return *this;
 }
 
 template<class T>
-const_iterator& list<T>::const_iterator::operator++()
-{
-    //if (!node)
-        //throw "something";
-    //if (!node->next)
-        //throw "end of list";
+typename list<T>::const_iterator& list<T>::const_iterator::operator++() {
     node = node->next;
     return *this;
 }
 
 template<class T>
-const_iterator list<T>::const_iterator::operator++(int)
-{
-    //if (!node)
-        //throw "something";
-    //if (!node->next)
-        //throw "end of list";
+typename list<T>::const_iterator list<T>::const_iterator::operator++(int) {
     const_iterator old_it = *this;
     node = node->next;
     return old_it;
 }
 
 template<class T>
-/*T&*/reference list<T>::const_iterator::operator*() const
-{
-    //if (!node)
-        //throw "something";
+typename list<T>::const_iterator::reference list<T>::const_iterator::operator*() const {
     return node->data;
 }
 
 template<class T>
-/*T**/pointer list<T>::const_iterator::operator->() const
-{
-    //if (!node)
-        //throw "something";
+typename list<T>::const_iterator::pointer list<T>::const_iterator::operator->() const {
     return &node->data;
 }
 
 template<class T>
-const_iterator& list<T>::const_iterator::operator--()
-{
-    //if (!node)
-        //throw "something";
-    //if (!node->prev)
-        //throw "beginning of list";
-    const_node = node->prev;
+typename list<T>::const_iterator& list<T>::const_iterator::operator--() {
+    node = node->prev;
     return *this;
 }
 
 template<class T>
-const_iterator list<T>::const_iterator::operator--(int)
-{
-    //if (!node)
-        //throw "something";
-    //if (!node->prev)
-        //throw "end of list";
+typename list<T>::const_iterator list<T>::const_iterator::operator--(int) {
     const_iterator old_it = *this;
     node = node->prev;
     return old_it;
 }
 
 template<class T>
-bool list<T>::const_iterator::operator==(const_iterator other) const
-{
+bool list<T>::const_iterator::operator==(const_iterator other) const {
     return (node == other.node);
 }
 
 template<class T>
-bool list<T>::const_iterator::operator!=(const_iterator other) const
-{
+bool list<T>::const_iterator::operator!=(const_iterator other) const {
     return (node != other.node);
 }
-
-//template<class T>
-//typename list<T>::const_iterator::ptrdiff_t list<T>::const_iterator::distance(typename list<T>::const_iterator first, typename list<T>::const_iterator last) {
-//    ptrdiff_t result = 0;
-//    while (first != last) {
-//        ++first;
-//        ++result;
-//    }
-//    return result;
-//}
 
 template<class T>
 list<T>::list(size_t count, const T& value) : list() {
-    if (count > 0) {
-        first = new list_node(value);
-        for (size_t i = 1, list_node *cur_node = first; i < count; ++i, cur_node = cur_node->next) {
-            cur_node->next = new list_node(first);
-            cur_node->next->prev = cur_node;
-        }
-        if (count == 0) {
-            last = first;
-        }
-        else {
-            last = new list_node(first);
-        }
+    for (size_t i = 0; i < count; ++i) {
+        push_front(value);
     }
 }
 
 template<class T>
-explicit list<T>::list(size_t count) : list() {
-    if (count > 0) {
-        first = new list_node();
-        for (size_t i = 1, list_node *cur_node = first; i < count; ++i, cur_node = cur_node->next) {
-            cur_node->next = new list_node();
-            cur_node->next->prev = cur_node;
-        }
-        if (count == 0) {
-            last = first;
-        }
-        else {
-            last = new list_node();
-        }
+list<T>::list(size_t count) : list() {
+    for (size_t i = 0; i < count; ++i) {
+        push_front(T{});
     }
 }
 
@@ -404,19 +289,26 @@ list<T>::~list() {
 }
 
 template<class T>
-list<T>::list(const list& other) {
-    first = new list_node(other.first);
-    for (list_node *new_cur_node = first, list_node *cur_other_node = other.first; cur_other_node != other.last; cur_other_node = cur_other_node->next) {
-        new_cur_node->next = new list_node(cur_other_node);
+list<T>::list(const list<T>& other) {
+    first = new list_node(other.first->data);
+    list_node *new_cur_node = first;
+    for (list_node *cur_other_node = other.first->next; cur_other_node != other.last;
+                                                    cur_other_node = cur_other_node->next) {
+        new_cur_node->next = new list_node(cur_other_node->data);
         new_cur_node->next->prev = new_cur_node;
+        new_cur_node = new_cur_node->next;
     }
-    last = new list_node(other.last);
+    last = new list_node(other.last->data);
+    last->prev = new_cur_node;
+    new_cur_node->next = last;
 }
 
 template<class T>
-list<T>::list& operator=(const list& other) {
+list<T>& list<T>::operator=(const list<T>& other) {
     list<T> new_list(other);
     swap(new_list);
+    new_list.clear();
+    return *this;
 }
 
 template<class T>
@@ -440,23 +332,23 @@ typename list<T>::const_iterator list<T>::cend() const noexcept {
 }
 
 template<class T>
-typename list<T>::reverse_iterator list<T>::rbegin() const {
-    return reverse_iterator(first);
+typename list<T>::reverse_iterator list<T>::rbegin() const noexcept {
+    return reverse_iterator(end());
 }
 
 template<class T>
-typename list<T>::reverse_iterator list<T>::rend() const {
-    return reverse_iterator(last);
+typename list<T>::reverse_iterator list<T>::rend() const noexcept {
+    return reverse_iterator(begin());
 }
 
 template<class T>
 typename list<T>::const_reverse_iterator list<T>::crbegin() const noexcept {
-    return const_reverse_iterator(first);
+    return const_reverse_iterator(cend());
 }
 
 template<class T>
 typename list<T>::const_reverse_iterator list<T>::crend() const noexcept {
-    return const_reverse_iterator(last);
+    return const_reverse_iterator(cbegin());
 }
 
 template<class T>
@@ -465,22 +357,16 @@ bool list<T>::empty() const noexcept {
 }
 
 template<class T>
-size_t list<T>::size() const noescept {
+size_t list<T>::size() const noexcept {
     size_t result = 0;
     for (list_node *cur_node = first; cur_node != last; cur_node = cur_node->next) {
         result++;
     }
+    return result;
 }
 
 template<class T>
-size_t list<T>::max_size() const noexcept {
-    return std::numeric_limits<size_t>::max() / sizeof(T);
-}
-
-void clear() noexcept {
-    if(empty()){
-        //TODO
-    }
+void list<T>::clear() noexcept {
     erase(begin(), end());
 }
 
@@ -491,33 +377,45 @@ typename list<T>::iterator list<T>::insert(const_iterator pos, const T& value) {
         first->next = new list_node();
         last = first->next;
         last->prev = first;
+        pos = end();
+    } else if (pos == begin()) {
+        pos.node->prev = new list_node(value);
+        pos.node->prev->next = first;
+        first = pos.node->prev;
     } else {
         pos.node->prev->next = new list_node(value);
         pos.node->prev->next->prev = pos.node->prev;
         pos.node->prev->next->next = pos.node;
         pos.node->prev = pos.node->prev->next;
     }
-    return --pos;
+    return iterator((--pos).node);
 }
 
-iterator insert(const_iterator pos, size_t count, const T& value) {
+template <class T>
+typename list<T>::iterator list<T>::insert(const_iterator pos, size_t count, const T& value) {
     if (!last && !first) {
         first = new list_node(value);
         first->next = new list_node();
         last = first->next;
         last->prev = first;
         for (size_t i = 1; i < count; ++i) {
-            insert(iterator(last), value);
+            pos = insert(iterator(last), value);
         }
     } else {
         for (size_t i = 0; i < count; ++i) {
             pos = insert(pos, value);
         }
     }
-    return pos;
+    return iterator(pos.node);
 }
 
-iterator erase(const_iterator pos) {
+template <class T>
+typename list<T>::iterator list<T>::erase(const_iterator pos) {
+    if (pos == begin()) {
+        first = pos.node->next;
+        delete pos.node;
+        return first;
+    }
     iterator next(pos.node->next);
     pos.node->prev->next = pos.node->next;
     pos.node->next->prev = pos.node->prev;
@@ -525,7 +423,8 @@ iterator erase(const_iterator pos) {
     return next;
 }
 
-iterator erase(const_iterator first, const_iterator last) {
+template <class T>
+typename list<T>::iterator list<T>::erase(const_iterator first, const_iterator last) {
     iterator cur(first.node);
     for (; cur.node != last.node;) {
         cur = erase(cur);
@@ -533,43 +432,44 @@ iterator erase(const_iterator first, const_iterator last) {
     return cur;
 }
 
-
-void push_back(const T& value) {
+template<class T>
+void list<T>::push_back(const T& value) {
     insert(end(), value);
 }
 
-void pop_back() {
-    if (empty()) {
-        //TODO
+template<class T>
+void list<T>::pop_back() {
+    if (!empty()) {
+        erase(--end());
     }
-    erase(--end());
 }
 
-void push_front(const T& value) {
+template<class T>
+void list<T>::push_front(const T& value) {
     insert(begin(), value);
 }
 
-void pop_front() {
-    if (empty()) {
-        //TODO
+template<class T>
+void list<T>::pop_front() {
+    if (!empty()) {
+        erase(begin());
     }
-    erase(begin());
 }
 
-void resize(size_t count) {
+template<class T>
+void list<T>::resize(size_t count) {
     size_t size_list = size();
     if (size_list > count) {
-        for (size_t i = 0, iterator it; i < count; ++i, ++it) {
-            ;
-        }
-        erase(it, last);
-    }
-    else if (size_list < count) {
-        insert(const_iterator (last->prev), count - size_list, T());
+        iterator it = begin();
+        for (size_t i = 0; i < count; ++i, ++it) {}
+        erase(it, end());
+    } else if (size_list < count) {
+        insert(const_iterator(last), count - size_list, T{});
     }
 }
 
-void swap(list& other) {
+template<class T>
+void list<T>::swap(list<T>& other) {
     list_node *other_first = other.first;
     list_node *other_last = other.last;
     other.first = first;
@@ -578,89 +478,101 @@ void swap(list& other) {
     last = other_last;
 }
 
-void merge(list& other) {
+template<class T>
+void list<T>::merge(list<T>& other) {
+    if (first == other.first && last == other.last)
+        return;
     list_node *cur = first;
     list_node *cur_other = other.first;
-    if (first->data < other.first->data)
-    {
+    if (first->data <= other.first->data) {
         cur = cur->next;
-    }
-    else
-    {
+    } else {
         first = other.first;
         cur_other = cur_other->next;
     }
     list_node *new_cur = first;
-    while (cur != last && cur_other != other.last)
-    {
-        if (cur->data < cur_other->data)
-        {
+    while (cur != last && cur_other != other.last) {
+        if (cur->data <= cur_other->data) {
             new_cur->next = cur;
             cur->prev = new_cur;
-            new_nur = new_cur->next;
+            new_cur = new_cur->next;
             cur = cur->next;
-        }
-        else
-        {
+        } else {
             new_cur->next = cur_other;
             cur_other->prev = new_cur;
-            new_nur = new_cur->next;
+            new_cur = new_cur->next;
             cur_other = cur_other->next;
         }
     }
-    if (cur != last)
-    {
+    if (cur != last) {
         new_cur->next = cur;
         cur->prev = new_cur;
         delete other.last;
-    }
-    else if (cur_other != last)
-    {
+        other.first = nullptr;
+        other.last = nullptr;
+    }  else if (cur_other != last) {
         new_cur->next = cur_other;
         cur_other->prev = new_cur;
         delete last;
         last = other.last;
+        other.first = nullptr;
+        other.last = nullptr;
     }
 }
 
-void splice(const_iterator pos, list& other) {
-    for (iterator it = other.begin(); it != other.end(); ++it) {
-        pos = insert(pos, it->node->data);
-        pos = pos->next;
+template<class T>
+void list<T>::splice(const_iterator pos, list<T>& other) {
+    if (pos == begin()) {
+        pos.node->prev = other.last->prev;
+        other.last->prev->next = pos.node;
+        first = other.first;
+    } else {
+        pos.node->prev->next = other.first;
+        other.first->prev = pos.node->prev;
+        pos.node->prev = other.last->prev;
+        other.last->prev->next = pos.node;
     }
+
+    other.first = other.last;
 }
 
-void remove(const T& value) {
-    for(iterator it = begin(); it != end(); ++it){
+template<class T>
+void list<T>::remove(const T& value) {
+    for (iterator it = begin(); it != end(); ++it) {
         if (*it == value) {
             erase(it);
         }
     }
 }
 
-void reverse() {
-    list<T> new_list = *this;
-    clear();
-    for(iterator it = new_list.begin(); it != new_list.end(); ++it) {
-        this->push_front(*it);
+template<class T>
+void list<T>::reverse() {
+    if (first == last)
+        return;
+    for (list_node *cur = first; cur != last; cur = cur->prev) {
+        list_node *prev = cur->prev;
+        cur->prev = cur->next;
+        cur->next = prev;
     }
+    first->next = last;
+    list_node *last_prev = last->prev;
+    last->prev = first;
+    first = last_prev;
 }
 
-void unique() {
+template<class T>
+void list<T>::unique() {
     for (iterator it = begin(); it != end(); ++it) {
-        while (it->node->data == it->node->next->data) {
-            erase(it);
-            it = it->next;
+        while (it.node->data == it.node->next->data) {
+            it = erase(it);
         }
     }
 }
 
-void front_back_split(list &back)
-{
-    size_t size_list = size();
+template<class T>
+void list<T>::front_back_split(list<T> &back, size_t size_list) {
     iterator it = begin();
-    for (int i = 0; i < size_list / 2 + size_list % 2; ++i)
-    {
+    for (size_t i = 0; i < size_list / 2 + size_list % 2; ++i) {
         ++it;
     }
     back.last = last;
@@ -671,9 +583,13 @@ void front_back_split(list &back)
     back.first->prev = nullptr;
 }
 
-void sort() {
-    list right_head();
-    front_back_split(right_head);
+template<class T>
+void list<T>::sort() {
+    size_t size_list = size();
+    if (size_list == 0 || size_list == 1)
+        return;
+    list<T> right_head;
+    front_back_split(right_head, size_list);
     sort();
     right_head.sort();
     merge(right_head);
