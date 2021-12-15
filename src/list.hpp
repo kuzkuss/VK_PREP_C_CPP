@@ -393,7 +393,7 @@ typename list<T>::iterator list<T>::insert(const_iterator pos, const T& value) {
 
 template <class T>
 typename list<T>::iterator list<T>::insert(const_iterator pos, size_t count, const T& value) {
-    if (!last && !first) {
+    if (!last && !first && count) {
         first = new list_node(value);
         first->next = new list_node();
         last = first->next;
@@ -413,6 +413,7 @@ template <class T>
 typename list<T>::iterator list<T>::erase(const_iterator pos) {
     if (pos == begin()) {
         first = pos.node->next;
+        first->prev = nullptr;
         delete pos.node;
         return first;
     }
@@ -538,10 +539,34 @@ void list<T>::splice(const_iterator pos, list<T>& other) {
 
 template<class T>
 void list<T>::remove(const T& value) {
-    for (iterator it = begin(); it != end(); ++it) {
-        if (*it == value) {
-            erase(it);
+    list<T> to_destroy;
+    iterator cur_it = begin();
+    iterator it_last = end();
+    while (cur_it != it_last) {
+        iterator next = cur_it;
+        ++next;
+        if (*cur_it == value) {
+            if (cur_it.node == first) {
+                first = cur_it.node->next;
+                first->prev = nullptr;
+            } else {
+                cur_it.node->prev->next = cur_it.node->next;
+                cur_it.node->next->prev = cur_it.node->prev;
+            }
+
+            auto pos = to_destroy.begin();
+            if (!pos.node) {
+                to_destroy.first = cur_it.node;
+                cur_it.node->next = nullptr;
+                cur_it.node->prev = nullptr;
+            } else {
+                pos.node->prev = cur_it.node;
+                cur_it.node->next = pos.node;
+                cur_it.node->prev = nullptr;
+                to_destroy.first = pos.node->prev;
+            }
         }
+        cur_it = next;
     }
 }
 
