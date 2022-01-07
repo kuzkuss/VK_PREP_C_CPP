@@ -3,11 +3,7 @@
 
 #include <stddef.h>
 
-#define ERROR 1
-#define OK 0
-
 typedef struct Matrix {
-    double **prows;
     double *elements;
     size_t rows;
     size_t columns;
