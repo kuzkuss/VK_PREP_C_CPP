@@ -6,7 +6,7 @@
 
 #define EPS 1.0e-7
 
-static void fill_new_matrix(const Matrix* matrix, Matrix* new_matrix, size_t del_col, size_t del_row);
+static void fill_new_matrix(const Matrix* matrix, Matrix* new_matrix, size_t skip_col, size_t skip_row);
 static Matrix* arithmetic_operation(const Matrix* l, const Matrix* r, int action);
 
 enum ERROR_CODE {ERROR_CODE_OK, ERROR_CODE_INCORRECT_DATA, ERROR_CODE_MEMORY_ALLOCATION_ERROR};
@@ -214,9 +214,9 @@ Matrix* mul(const Matrix* l, const Matrix* r) {
     return res_mtr;
 }
 
-static void fill_new_matrix(const Matrix* matrix, Matrix* new_matrix, size_t del_col, size_t del_row) {
+static void fill_new_matrix(const Matrix* matrix, Matrix* new_matrix, size_t skip_col, size_t skip_row) {
     if (!matrix || !matrix->elements || !new_matrix ||
-            !new_matrix->elements || del_col >= matrix->columns || del_row >= matrix->rows) {
+            !new_matrix->elements || skip_col >= matrix->columns || skip_row >= matrix->rows) {
         return;
     }
 
@@ -224,7 +224,7 @@ static void fill_new_matrix(const Matrix* matrix, Matrix* new_matrix, size_t del
     size_t new_j = 0;
     for (size_t i = 0; i < matrix->rows; ++i) {
         for (size_t j = 0; j < matrix->rows; ++j) {
-            if (j == del_col || i == del_row) {
+            if (j == skip_col || i == skip_row) {
                 continue;
             }
             new_matrix->elements[new_i * new_matrix->columns + new_j] =
