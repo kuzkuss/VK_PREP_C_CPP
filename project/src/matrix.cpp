@@ -2,6 +2,7 @@
 #include <functional>
 #include <iomanip>
 #include <limits>
+#include <iostream>
 
 #include "exceptions.h"
 
@@ -13,9 +14,8 @@ static constexpr double precision = std::numeric_limits<double>::max_digits10;
 
 static void fill_new_matrix(const prep::Matrix &src_matrix, prep::Matrix *new_matrix,
                             size_t skip_col, size_t skip_row);
-template <typename T>
 static prep::Matrix arithmetic_operation(const prep::Matrix& lhs,
-                    const prep::Matrix& rhs, T oper);
+                    const prep::Matrix& rhs, std::function<double(double, double)> oper);
 
 namespace prep {
     Matrix::Matrix(std::istream& is) {
@@ -225,9 +225,8 @@ namespace prep {
     }
 }  // namespace prep
 
-template <typename T>
 static prep::Matrix arithmetic_operation(const prep::Matrix& lhs,
-            const prep::Matrix& rhs, T oper) {
+            const prep::Matrix& rhs, std::function<double(double, double)> oper) {
     size_t l_rows = lhs.getRows();
     size_t l_cols = lhs.getCols();
     size_t r_rows = rhs.getRows();
@@ -241,6 +240,7 @@ static prep::Matrix arithmetic_operation(const prep::Matrix& lhs,
 
     for (size_t i = 0; i < l_rows; ++i) {
         for (size_t j = 0; j < l_cols; ++j) {
+            std::cout << "qwer " << oper(1.0, 1.0) << std::endl;
             res_mtr(i, j) = oper(lhs(i, j), rhs(i, j));
         }
     }
