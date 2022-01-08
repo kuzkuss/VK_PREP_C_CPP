@@ -9,26 +9,28 @@
 
 static constexpr double kEps = 1e-07;
 
-#include <iostream>
-
 static constexpr double precision = std::numeric_limits<double>::max_digits10;
 
-static void fill_new_matrix(const prep::Matrix &matrix, prep::Matrix &new_matrix, size_t skip_col, size_t skip_row);
-static prep::Matrix arithmetic_operation(const prep::Matrix& lhs, const prep::Matrix& rhs, std::function<bool(double, double)> oper);
+static void fill_new_matrix(const prep::Matrix &src_matrix, prep::Matrix *new_matrix,
+                            size_t skip_col, size_t skip_row);
+static prep::Matrix arithmetic_operation(const prep::Matrix& lhs,
+                    const prep::Matrix& rhs, std::function<bool(double, double)> oper);
 
 namespace prep {
     Matrix::Matrix(std::istream& is) {
-        size_t input_row = 0;
-        size_t input_col = 0;
+        size_t input_rows = 0;
+        size_t input_cols = 0;
 
-        if (!(is >> input_row) || input_row <= 0) {
+        if (!(is >> input_rows) || input_rows == 0) {
             throw InvalidMatrixStream();
         }
-        if (!(is >> input_col) || input_col <= 0) {
+        if (!(is >> input_cols) || input_cols == 0) {
             throw InvalidMatrixStream();
         }
 
-        Matrix(input_row, input_col);
+        rows = input_rows;
+        columns = input_cols;
+        elements.resize(rows * columns);
 
         for (size_t i = 0; i < rows; ++i) {
             for (size_t j = 0; j < columns; ++j) {
@@ -98,7 +100,8 @@ namespace prep {
         for (size_t i = 0; i < rows; ++i) {
             for (size_t j = 0; j < columns; ++j) {
                 for (size_t k = 0; k < rhs.columns; ++k) {
-                    res_mtr.elements[i * rhs.columns + k] += elements[i * columns + j] * rhs.elements[j * rhs.columns + k];
+                    res_mtr.elements[i * rhs.columns + k] +=
+                            elements[i * columns + j] * rhs.elements[j * rhs.columns + k];
                 }
             }
         }
@@ -141,7 +144,7 @@ namespace prep {
 
         double determinant = 0.0;
         for (size_t i = 0; i < rows; ++i) {
-            fill_new_matrix(*this, new_mtr, i, 0);
+            fill_new_matrix(*this, &new_mtr, i, 0);
             double cur_det = new_mtr.det();
             if (i % 2 != 0) {
                 cur_det = -cur_det;
@@ -166,7 +169,7 @@ namespace prep {
 
         for (size_t i = 0; i < columns; ++i) {
             for (size_t j = 0; j < rows; ++j) {
-                fill_new_matrix(*this, new_mtr, i, j);
+                fill_new_matrix(*this, &new_mtr, i, j);
                 double res = new_mtr.det();
                 if ((i + j) % 2 != 0) {
                     res = -res;
@@ -221,7 +224,8 @@ namespace prep {
     }
 }  // namespace prep
 
-static prep::Matrix arithmetic_operation(const prep::Matrix& lhs, const prep::Matrix& rhs, std::function<bool(double, double)> oper) {
+static prep::Matrix arithmetic_operation(const prep::Matrix& lhs,
+            const prep::Matrix& rhs, std::function<bool(double, double)> oper) {
     size_t l_rows = lhs.getRows();
     size_t l_cols = lhs.getCols();
     size_t r_rows = rhs.getRows();
@@ -242,7 +246,8 @@ static prep::Matrix arithmetic_operation(const prep::Matrix& lhs, const prep::Ma
     return res_mtr;
 }
 
-static void fill_new_matrix(const prep::Matrix &src_matrix, prep::Matrix &new_matrix, size_t skip_col, size_t skip_row) {
+static void fill_new_matrix(const prep::Matrix &src_matrix,
+                    prep::Matrix *new_matrix, size_t skip_col, size_t skip_row) {
     size_t new_matrix_row = 0;
     size_t new_matrix_col = 0;
 
@@ -253,7 +258,7 @@ static void fill_new_matrix(const prep::Matrix &src_matrix, prep::Matrix &new_ma
             if (j == skip_col || i == skip_row) {
                 continue;
             }
-            new_matrix(new_matrix_row, new_matrix_col) = src_matrix(i, j);
+            (*new_matrix)(new_matrix_row, new_matrix_col) = src_matrix(i, j);
             ++new_matrix_col;
         }
         if (new_matrix_col == src_matrix_rows - 1) {
