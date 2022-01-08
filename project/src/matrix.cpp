@@ -13,8 +13,9 @@ static constexpr double precision = std::numeric_limits<double>::max_digits10;
 
 static void fill_new_matrix(const prep::Matrix &src_matrix, prep::Matrix *new_matrix,
                             size_t skip_col, size_t skip_row);
+template <typename T>
 static prep::Matrix arithmetic_operation(const prep::Matrix& lhs,
-                    const prep::Matrix& rhs, std::function<bool(double, double)> oper);
+                    const prep::Matrix& rhs, T oper);
 
 namespace prep {
     Matrix::Matrix(std::istream& is) {
@@ -224,8 +225,9 @@ namespace prep {
     }
 }  // namespace prep
 
+template <typename T>
 static prep::Matrix arithmetic_operation(const prep::Matrix& lhs,
-            const prep::Matrix& rhs, std::function<bool(double, double)> oper) {
+            const prep::Matrix& rhs, T oper) {
     size_t l_rows = lhs.getRows();
     size_t l_cols = lhs.getCols();
     size_t r_rows = rhs.getRows();
