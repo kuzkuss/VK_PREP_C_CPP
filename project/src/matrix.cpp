@@ -9,13 +9,11 @@
 
 namespace prep {
     Matrix::Matrix(size_t num_rows, size_t num_cols): rows(num_rows), columns(num_cols) {
-        for (size_t i = 0; i < rows; ++i) {
-            mtr.emplace_back(std::vector<double>(columns));
-        }
+        elements.reserve(rows * columns);
     }
     Matrix::Matrix(std::istream& is) {
-	int r = 0;
-	int c = 0;
+        size_t r = 0;
+        size_t c = 0;
 
         if (!(is >> r) || r <= 0) {
             throw InvalidMatrixStream();
@@ -27,13 +25,11 @@ namespace prep {
 	rows = r;
 	columns = c;
 
-        for (size_t i = 0; i < rows; ++i) {
-            mtr.push_back(std::vector<double>(columns));
-        }
+        elements.reserve(rows * columns);
 
         for (size_t i = 0; i < rows; ++i)
             for (size_t j = 0; j < columns; ++j)
-                if (!(is >> mtr[i][j])) {
+                if (!(is >> elements[i * columns + j])) {
                     throw InvalidMatrixStream();
                 }
     }
@@ -47,13 +43,13 @@ namespace prep {
     double Matrix::operator()(size_t i, size_t j) const {
         if (i >= rows || j >= columns)
             throw OutOfRange(i, j, *this);
-        return mtr[i][j];
+        return elements[i * columns + j];
     }
 
     double& Matrix::operator()(size_t i, size_t j) {
         if (i >= rows || j >= columns)
             throw OutOfRange(i, j, *this);
-        return mtr[i][j];
+        return elements[i * columns + j];
     }
 
     bool Matrix::operator==(const Matrix& rhs) const {
@@ -64,7 +60,7 @@ namespace prep {
 
         for (size_t i = 0; i < rows && res; i++) {
             for (size_t j = 0; j < columns && res; j++) {
-                if (fabs(rhs.mtr[i][j] - mtr[i][j]) > EPS) {
+                if (fabs(rhs.elements[i * columns + j] - elements[i * columns + j]) > EPS) {
                     res = false;
                 }
             }
@@ -73,89 +69,73 @@ namespace prep {
     }
 
     bool Matrix::operator!=(const Matrix& rhs) const {
-        bool res = true;
-
-        size_t count_eq_elements = 0;
-        if (rows == rhs.rows && columns == rhs.columns) {
-            for (size_t i = 0; i < rows; i++) {
-                for (size_t j = 0; j < columns; j++) {
-                    if (fabs(rhs.mtr[i][j] - mtr[i][j]) <= EPS) {
-                        count_eq_elements++;
-                    }
-                }
-            }
-        }
-
-        if (count_eq_elements == rows * columns)
-            res = false;
-
-        return res;
+        return !(*this == rhs);
     }
 
     Matrix Matrix::operator+(const Matrix& rhs) const {
-        if (this->rows != rhs.rows || this->columns != rhs.columns)
+        if (rows != rhs.rows || columns != rhs.columns)
             throw DimensionMismatch(*this, rhs);
 
-        Matrix res_mtr(this->rows, this->columns);
+        Matrix res_mtr(rows, columns);
 
-        for (size_t i = 0; i < this->rows; ++i)
-            for (size_t j = 0; j < this->columns; ++j)
-                res_mtr.mtr[i][j] = this->mtr[i][j] + rhs.mtr[i][j];
+        for (size_t i = 0; i < rows; ++i)
+            for (size_t j = 0; j < columns; ++j)
+                res_mtr.elements[i * columns + j] = elements[i * columns + j] + rhs.elements[i * columns + j];
 
         return res_mtr;
     }
     Matrix Matrix::operator-(const Matrix& rhs) const {
-        if (this->rows != rhs.rows || this->columns != rhs.columns)
+        if (rows != rhs.rows || columns != rhs.columns)
             throw DimensionMismatch(*this, rhs);
 
-        Matrix res_mtr(this->rows, this->columns);
+        Matrix res_mtr(rows, columns);
 
-        for (size_t i = 0; i < this->rows; ++i)
-            for (size_t j = 0; j < this->columns; ++j)
-                res_mtr.mtr[i][j] = this->mtr[i][j] - rhs.mtr[i][j];
+        for (size_t i = 0; i < rows; ++i)
+            for (size_t j = 0; j < columns; ++j)
+                res_mtr.elements[i * columns + j] = elements[i * columns + j] - rhs.elements[i * columns + j];
 
         return res_mtr;
     }
     Matrix Matrix::operator*(const Matrix& rhs) const {
-        if (this->columns != rhs.rows)
+        if (columns != rhs.rows)
             throw DimensionMismatch(*this, rhs);
 
-        Matrix res_mtr(this->rows, rhs.columns);
+        Matrix res_mtr(rows, rhs.columns);
 
-        for (size_t i = 0; i < this->rows; ++i)
-            for (size_t j = 0; j < this->columns; ++j)
+        for (size_t i = 0; i < rows; ++i)
+            for (size_t j = 0; j < columns; ++j)
                 for (size_t k = 0; k < rhs.columns; ++k)
-                    res_mtr.mtr[i][k] += this->mtr[i][j] * rhs.mtr[j][k];
+                    res_mtr.elements[i * rhs.columns + k] += elements[i * columns + j] * rhs.elements[j * rhs.columns + k];
         return res_mtr;
     }
 
     Matrix Matrix::operator*(double val) const {
-        Matrix new_mtr(this->rows, this->columns);
+        Matrix new_mtr(rows, columns);
 
-        for (size_t i = 0; i < this->rows; ++i)
-            for (size_t j = 0; j < this->columns; ++j)
-                new_mtr.mtr[i][j] = val * this->mtr[i][j];
+        for (size_t i = 0; i < rows; ++i)
+            for (size_t j = 0; j < columns; ++j)
+                new_mtr.elements[i * columns + j] = val * elements[i * columns + j];
 
         return new_mtr;
     }
 
     Matrix Matrix::transp() const {
-        Matrix transp_mtr(this->columns, this->rows);
+        Matrix transp_mtr(columns, rows);
 
-        for (size_t i = 0; i < this->columns; ++i)
-            for (size_t j = 0; j < this->rows; ++j)
-                transp_mtr.mtr[i][j] = this->mtr[j][i];
+        for (size_t i = 0; i < columns; ++i)
+            for (size_t j = 0; j < rows; ++j)
+                transp_mtr.elements[i * rows + j] = elements[j * columns + i];
         return transp_mtr;
     }
 
-    void Matrix::fill_new_matrix(Matrix *new_matrix, size_t n, size_t del_col, size_t del_row) const {
+    static void fill_new_matrix(const Matrix *matrix, Matrix *new_matrix, size_t n, size_t del_col, size_t del_row) {
         size_t new_i = 0;
         size_t new_j = 0;
 
         for (size_t i = 0; i < n; ++i)
             for (size_t j = 0; j < n; ++j) {
                 if (j != del_col && i != del_row) {
-                    new_matrix->mtr[new_i][new_j] = this->mtr[i][j];
+                    new_matrix->elements[new_i * new_matrix->columns + new_j] = elements[i * columns + j];
                     if (++new_j == n - 1) {
                         new_j = 0;
                         ++new_i;
@@ -165,60 +145,60 @@ namespace prep {
     }
 
     double Matrix::det() const {
-        if (this->rows != this->columns)
+        if (rows != columns)
             throw DimensionMismatch(*this);
 
-        if (this->rows == 1) {
-            return this->mtr[0][0];
+        if (rows == 1) {
+            return elements[0];
         }
 
-        Matrix new_mtr(this->rows - 1, this->columns - 1);
+        Matrix new_mtr(rows - 1, columns - 1);
 
         double determinant = 0.0;
-        for (size_t i = 0; i < this->rows; ++i) {
-            this->fill_new_matrix(&new_mtr, this->rows, i, 0);
+        for (size_t i = 0; i < rows; ++i) {
+            fill_new_matrix(&new_mtr, rows, i, 0);
             double cur_det = new_mtr.det();
-            determinant += this->mtr[0][i] * (double((i + 3) % 2) - double((i + 2) % 2)) * cur_det;
+            determinant += elements[i] * (double((i + 3) % 2) - double((i + 2) % 2)) * cur_det;
         }
 
         return determinant;
     }
 
     Matrix Matrix::adj() const {
-        if (this->rows != this->columns)
+        if (rows != columns)
             throw DimensionMismatch(*this);
-        if (this->rows == 1)
+        if (rows == 1)
             throw DimensionMismatch(*this);
 
-        Matrix adj_mtr = this->transp();
+        Matrix adj_mtr = transp();
 
-        Matrix new_mtr(this->rows - 1, this->columns - 1);
+        Matrix new_mtr(rows - 1, columns - 1);
 
-        for (size_t i = 0; i < this->columns; ++i)
-            for (size_t j = 0; j < this->rows; ++j) {
-                this->fill_new_matrix(&new_mtr, this->rows, i, j);
+        for (size_t i = 0; i < columns; ++i)
+            for (size_t j = 0; j < rows; ++j) {
+                fill_new_matrix(&new_mtr, rows, i, j);
                 double res = new_mtr.det();
-                adj_mtr.mtr[i][j] = (double((i + j + 3) % 2) - double((i + j + 2) % 2)) * res;
+                adj_mtr.elements[i * columns + j] = (double((i + j + 3) % 2) - double((i + j + 2) % 2)) * res;
             }
         return adj_mtr;
     }
 
     Matrix Matrix::inv() const {
-        if (this->rows != this->columns)
+        if (rows != columns)
             throw DimensionMismatch(*this);
 
-        double det_mtr = this->det();
+        double det_mtr = det();
 
         if (det_mtr == 0)
             throw SingularMatrix();
 
-        if (this->rows == 1) {
+        if (rows == 1) {
             Matrix adj_mtr(1, 1);
-            adj_mtr.mtr[0][0] = 1 / det_mtr;
+            adj_mtr.elements[0] = 1 / det_mtr;
             return adj_mtr;
         }
 
-        Matrix adj_mtr = this->adj();
+        Matrix adj_mtr = adj();
 
         Matrix inv_mtr = adj_mtr * (1 / det_mtr);
 
@@ -226,13 +206,7 @@ namespace prep {
     }
 
     Matrix operator*(double val, const Matrix& matrix) {
-        Matrix new_mtr(matrix.rows, matrix.columns);
-
-        for (size_t i = 0; i < matrix.rows; ++i)
-            for (size_t j = 0; j < matrix.columns; ++j)
-                new_mtr.mtr[i][j] = val * matrix.mtr[i][j];
-
-        return new_mtr;
+        return matrix * val;
     }
 
     std::ostream& operator<<(std::ostream& os, const Matrix& matrix) {
@@ -240,7 +214,7 @@ namespace prep {
         for (size_t i = 0; i < matrix.rows; i++) {
             for (size_t j = 0; j < matrix.columns; j++) {
                 os << std::setprecision(std::numeric_limits<double>::max_digits10)
-                   << matrix.mtr[i][j];
+                   << matrix.elements[i * matrix.columns + j];
                 if (i < matrix.rows - 1 || j < matrix.columns - 1)
                     os << ' ';
             }

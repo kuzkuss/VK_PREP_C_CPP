@@ -5,10 +5,9 @@
 
 namespace prep {
 class Matrix {
-    std::vector <std::vector <double>> mtr;
+    std::vector <double> elements;
     size_t rows;
     size_t columns;
-    void fill_new_matrix(Matrix *new_matrix, size_t n, size_t del_col, size_t del_row) const;
 
  public:
     explicit Matrix(size_t num_rows = 0, size_t num_cols = 0);
