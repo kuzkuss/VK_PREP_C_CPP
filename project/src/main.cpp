@@ -9,7 +9,9 @@ int main() {
     mtr(1, 1) = 4;
     std::cout << mtr << std::endl;
     std::cout << mtr.transp() << std::endl;
+    std::cout << "1";
     std::cout << mtr.det() << std::endl;
+    std::cout << "2";
     std::cout << mtr.adj() << std::endl;
     std::cout << mtr.inv() << std::endl;
     return 0;

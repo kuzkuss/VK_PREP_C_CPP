@@ -5,12 +5,12 @@
 
 namespace prep {
 class Matrix {
-    std::vector <double> elements;
     size_t rows;
     size_t columns;
+    std::vector <double> elements;
 
  public:
-    explicit Matrix(size_t num_rows = 0, size_t num_cols = 0);
+    explicit Matrix(size_t num_rows = 0, size_t num_cols = 0) : rows(num_rows), columns(num_cols), elements(num_rows * num_cols) {};
     explicit Matrix(std::istream& is);
     Matrix(const Matrix& rhs) = default;
     Matrix& operator=(const Matrix& rhs) = default;

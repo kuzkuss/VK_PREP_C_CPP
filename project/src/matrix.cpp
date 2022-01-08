@@ -1,37 +1,42 @@
 #include <cmath>
+#include <functional>
 #include <iomanip>
 #include <limits>
 
-#include "matrix.h"
 #include "exceptions.h"
 
-#define EPS 1e-07
+#include "matrix.h"
+
+static constexpr double kEps = 1e-07;
+
+#include <iostream>
+
+static constexpr double precision = std::numeric_limits<double>::max_digits10;
+
+static void fill_new_matrix(const prep::Matrix &matrix, prep::Matrix &new_matrix, size_t skip_col, size_t skip_row);
+static prep::Matrix arithmetic_operation(const prep::Matrix& lhs, const prep::Matrix& rhs, std::function<bool(double, double)> oper);
 
 namespace prep {
-    Matrix::Matrix(size_t num_rows, size_t num_cols): rows(num_rows), columns(num_cols) {
-        elements.reserve(rows * columns);
-    }
     Matrix::Matrix(std::istream& is) {
-        size_t r = 0;
-        size_t c = 0;
+        size_t input_row = 0;
+        size_t input_col = 0;
 
-        if (!(is >> r) || r <= 0) {
+        if (!(is >> input_row) || input_row <= 0) {
             throw InvalidMatrixStream();
         }
-        if (!(is >> c) || c <= 0) {
+        if (!(is >> input_col) || input_col <= 0) {
             throw InvalidMatrixStream();
         }
 
-	rows = r;
-	columns = c;
+        Matrix(input_row, input_col);
 
-        elements.reserve(rows * columns);
-
-        for (size_t i = 0; i < rows; ++i)
-            for (size_t j = 0; j < columns; ++j)
+        for (size_t i = 0; i < rows; ++i) {
+            for (size_t j = 0; j < columns; ++j) {
                 if (!(is >> elements[i * columns + j])) {
                     throw InvalidMatrixStream();
                 }
+            }
+        }
     }
     size_t Matrix::getRows() const {
         return rows;
@@ -41,26 +46,29 @@ namespace prep {
     }
 
     double Matrix::operator()(size_t i, size_t j) const {
-        if (i >= rows || j >= columns)
+        if (i >= rows || j >= columns) {
             throw OutOfRange(i, j, *this);
+        }
         return elements[i * columns + j];
     }
 
     double& Matrix::operator()(size_t i, size_t j) {
-        if (i >= rows || j >= columns)
+        if (i >= rows || j >= columns) {
             throw OutOfRange(i, j, *this);
+        }
         return elements[i * columns + j];
     }
 
     bool Matrix::operator==(const Matrix& rhs) const {
         bool res = true;
 
-        if (rows != rhs.rows || columns != rhs.columns)
+        if (rows != rhs.rows || columns != rhs.columns) {
             res = false;
+        }
 
         for (size_t i = 0; i < rows && res; i++) {
             for (size_t j = 0; j < columns && res; j++) {
-                if (fabs(rhs.elements[i * columns + j] - elements[i * columns + j]) > EPS) {
+                if (fabs(rhs.elements[i * columns + j] - elements[i * columns + j]) > kEps) {
                     res = false;
                 }
             }
@@ -73,48 +81,38 @@ namespace prep {
     }
 
     Matrix Matrix::operator+(const Matrix& rhs) const {
-        if (rows != rhs.rows || columns != rhs.columns)
-            throw DimensionMismatch(*this, rhs);
-
-        Matrix res_mtr(rows, columns);
-
-        for (size_t i = 0; i < rows; ++i)
-            for (size_t j = 0; j < columns; ++j)
-                res_mtr.elements[i * columns + j] = elements[i * columns + j] + rhs.elements[i * columns + j];
-
-        return res_mtr;
+        return arithmetic_operation(*this, rhs, std::plus<double>());
     }
+
     Matrix Matrix::operator-(const Matrix& rhs) const {
-        if (rows != rhs.rows || columns != rhs.columns)
-            throw DimensionMismatch(*this, rhs);
-
-        Matrix res_mtr(rows, columns);
-
-        for (size_t i = 0; i < rows; ++i)
-            for (size_t j = 0; j < columns; ++j)
-                res_mtr.elements[i * columns + j] = elements[i * columns + j] - rhs.elements[i * columns + j];
-
-        return res_mtr;
+        return arithmetic_operation(*this, rhs, std::minus<double>());
     }
+
     Matrix Matrix::operator*(const Matrix& rhs) const {
-        if (columns != rhs.rows)
+        if (columns != rhs.rows) {
             throw DimensionMismatch(*this, rhs);
+        }
 
         Matrix res_mtr(rows, rhs.columns);
 
-        for (size_t i = 0; i < rows; ++i)
-            for (size_t j = 0; j < columns; ++j)
-                for (size_t k = 0; k < rhs.columns; ++k)
+        for (size_t i = 0; i < rows; ++i) {
+            for (size_t j = 0; j < columns; ++j) {
+                for (size_t k = 0; k < rhs.columns; ++k) {
                     res_mtr.elements[i * rhs.columns + k] += elements[i * columns + j] * rhs.elements[j * rhs.columns + k];
+                }
+            }
+        }
         return res_mtr;
     }
 
     Matrix Matrix::operator*(double val) const {
         Matrix new_mtr(rows, columns);
 
-        for (size_t i = 0; i < rows; ++i)
-            for (size_t j = 0; j < columns; ++j)
+        for (size_t i = 0; i < rows; ++i) {
+            for (size_t j = 0; j < columns; ++j) {
                 new_mtr.elements[i * columns + j] = val * elements[i * columns + j];
+            }
+        }
 
         return new_mtr;
     }
@@ -122,31 +120,18 @@ namespace prep {
     Matrix Matrix::transp() const {
         Matrix transp_mtr(columns, rows);
 
-        for (size_t i = 0; i < columns; ++i)
-            for (size_t j = 0; j < rows; ++j)
+        for (size_t i = 0; i < columns; ++i) {
+            for (size_t j = 0; j < rows; ++j) {
                 transp_mtr.elements[i * rows + j] = elements[j * columns + i];
+            }
+        }
         return transp_mtr;
     }
 
-    static void fill_new_matrix(const Matrix *matrix, Matrix *new_matrix, size_t n, size_t del_col, size_t del_row) {
-        size_t new_i = 0;
-        size_t new_j = 0;
-
-        for (size_t i = 0; i < n; ++i)
-            for (size_t j = 0; j < n; ++j) {
-                if (j != del_col && i != del_row) {
-                    new_matrix->elements[new_i * new_matrix->columns + new_j] = elements[i * columns + j];
-                    if (++new_j == n - 1) {
-                        new_j = 0;
-                        ++new_i;
-                    }
-                }
-            }
-    }
-
     double Matrix::det() const {
-        if (rows != columns)
+        if (rows != columns) {
             throw DimensionMismatch(*this);
+        }
 
         if (rows == 1) {
             return elements[0];
@@ -156,46 +141,57 @@ namespace prep {
 
         double determinant = 0.0;
         for (size_t i = 0; i < rows; ++i) {
-            fill_new_matrix(&new_mtr, rows, i, 0);
+            fill_new_matrix(*this, new_mtr, i, 0);
             double cur_det = new_mtr.det();
-            determinant += elements[i] * (double((i + 3) % 2) - double((i + 2) % 2)) * cur_det;
+            if (i % 2 != 0) {
+                cur_det = -cur_det;
+            }
+            determinant += elements[i] * cur_det;
         }
 
         return determinant;
     }
 
     Matrix Matrix::adj() const {
-        if (rows != columns)
+        if (rows != columns) {
             throw DimensionMismatch(*this);
-        if (rows == 1)
+        }
+        if (rows == 1) {
             throw DimensionMismatch(*this);
+        }
 
         Matrix adj_mtr = transp();
 
         Matrix new_mtr(rows - 1, columns - 1);
 
-        for (size_t i = 0; i < columns; ++i)
+        for (size_t i = 0; i < columns; ++i) {
             for (size_t j = 0; j < rows; ++j) {
-                fill_new_matrix(&new_mtr, rows, i, j);
+                fill_new_matrix(*this, new_mtr, i, j);
                 double res = new_mtr.det();
-                adj_mtr.elements[i * columns + j] = (double((i + j + 3) % 2) - double((i + j + 2) % 2)) * res;
+                if ((i + j) % 2 != 0) {
+                    res = -res;
+                }
+                adj_mtr.elements[i * columns + j] = res;
             }
+        }
         return adj_mtr;
     }
 
     Matrix Matrix::inv() const {
-        if (rows != columns)
+        if (rows != columns) {
             throw DimensionMismatch(*this);
+        }
 
         double det_mtr = det();
 
-        if (det_mtr == 0)
+        if (fabs(det_mtr - 0.0) < kEps) {
             throw SingularMatrix();
+        }
 
         if (rows == 1) {
-            Matrix adj_mtr(1, 1);
-            adj_mtr.elements[0] = 1 / det_mtr;
-            return adj_mtr;
+            Matrix inv_mtr(1, 1);
+            inv_mtr.elements[0] = 1 / det_mtr;
+            return inv_mtr;
         }
 
         Matrix adj_mtr = adj();
@@ -213,14 +209,57 @@ namespace prep {
         os << matrix.rows << ' ' << matrix.columns << std::endl;
         for (size_t i = 0; i < matrix.rows; i++) {
             for (size_t j = 0; j < matrix.columns; j++) {
-                os << std::setprecision(std::numeric_limits<double>::max_digits10)
+                os << std::setprecision(precision)
                    << matrix.elements[i * matrix.columns + j];
-                if (i < matrix.rows - 1 || j < matrix.columns - 1)
+                if (i < matrix.rows - 1 || j < matrix.columns - 1) {
                     os << ' ';
+                }
             }
             os << std::endl;
         }
         return os;
     }
 }  // namespace prep
+
+static prep::Matrix arithmetic_operation(const prep::Matrix& lhs, const prep::Matrix& rhs, std::function<bool(double, double)> oper) {
+    size_t l_rows = lhs.getRows();
+    size_t l_cols = lhs.getCols();
+    size_t r_rows = rhs.getRows();
+    size_t r_cols = rhs.getCols();
+
+    if (l_rows != r_rows || l_cols != r_cols) {
+        throw prep::DimensionMismatch(lhs, rhs);
+    }
+
+    prep::Matrix res_mtr(l_rows, l_cols);
+
+    for (size_t i = 0; i < l_rows; ++i) {
+        for (size_t j = 0; j < l_cols; ++j) {
+            res_mtr(i, j) = oper(lhs(i, j), rhs(i, j));
+        }
+    }
+
+    return res_mtr;
+}
+
+static void fill_new_matrix(const prep::Matrix &src_matrix, prep::Matrix &new_matrix, size_t skip_col, size_t skip_row) {
+    size_t new_matrix_row = 0;
+    size_t new_matrix_col = 0;
+
+    size_t src_matrix_rows = src_matrix.getRows();
+
+    for (size_t i = 0; i < src_matrix_rows; ++i) {
+        for (size_t j = 0; j < src_matrix_rows; ++j) {
+            if (j == skip_col || i == skip_row) {
+                continue;
+            }
+            new_matrix(new_matrix_row, new_matrix_col) = src_matrix(i, j);
+            ++new_matrix_col;
+        }
+        if (new_matrix_col == src_matrix_rows - 1) {
+            new_matrix_col = 0;
+            ++new_matrix_row;
+        }
+    }
+}
 
