@@ -87,11 +87,12 @@ Matrix* create_matrix(size_t rows, size_t cols) {
 }
 
 void free_matrix(Matrix* matrix) {
-    if (matrix) {
-        free(matrix->elements);
-        matrix->elements = NULL;
-        free(matrix);
+    if (!matrix) {
+        return;
     }
+    free(matrix->elements);
+    matrix->elements = NULL;
+    free(matrix);
 }
 
 int get_rows(const Matrix* matrix, size_t* rows) {
@@ -220,19 +221,20 @@ static void fill_new_matrix(const Matrix* matrix, Matrix* new_matrix, size_t ski
         return;
     }
 
-    size_t new_i = 0;
-    size_t new_j = 0;
+    size_t new_matrix_row = 0;
+    size_t new_matrix_col = 0;
     for (size_t i = 0; i < matrix->rows; ++i) {
         for (size_t j = 0; j < matrix->rows; ++j) {
             if (j == skip_col || i == skip_row) {
                 continue;
             }
-            new_matrix->elements[new_i * new_matrix->columns + new_j] =
+            new_matrix->elements[new_matrix_row * new_matrix->columns + new_matrix_col] =
                     matrix->elements[i * matrix->columns + j];
-            if (++new_j == matrix->rows - 1) {
-                new_j = 0;
-                ++new_i;
-            }
+            new_matrix_col++;
+        }
+        if (new_matrix_col == matrix->rows - 1) {
+            new_matrix_col = 0;
+            ++new_matrix_row;
         }
     }
 }
@@ -303,7 +305,7 @@ Matrix* adj(const Matrix* matrix) {
             rc = det(new_mtr, &res);
             if (rc) {
                 free_matrix(adj_mtr);
-                i = matrix->columns;
+                i = matrix->rows;
                 break;
             }
             if ((i + j) % 2 != 0) {
@@ -340,12 +342,12 @@ Matrix* inv(const Matrix* matrix) {
     }
 
     if (matrix->rows == 1) {
-        Matrix *adj_mtr = create_matrix(1, 1);
-        if (!adj_mtr) {
+        Matrix *inv_mtr = create_matrix(1, 1);
+        if (!inv_mtr) {
             return NULL;
         }
-        adj_mtr->elements[0] = 1 / det_mtr;
-        return adj_mtr;
+        inv_mtr->elements[0] = 1 / det_mtr;
+        return inv_mtr;
     }
 
     Matrix *adj_mtr = adj(matrix);
