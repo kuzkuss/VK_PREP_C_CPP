@@ -1,10 +1,10 @@
 #include <stdio.h>
-
+#include "matrix.h"
 
 int main(void) {
-    /* NOTE(stitaevskiy):
-     * You could check your implementation here.
-     */
+    int rows = 4;
+    int columns = 4;
+    Matrix *matrix = create_matrix(rows, columns);
+    free_matrix(matrix);
     return 0;
 }
-
